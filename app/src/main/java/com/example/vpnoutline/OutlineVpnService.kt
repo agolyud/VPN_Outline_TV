@@ -21,10 +21,10 @@ import shadowsocks.Shadowsocks
 
 class OutlineVpnService : VpnService() {
     companion object {
-        private const val HOST = "185.236.228.60"
-        private const val PORT = 65502
-        private const val PASSWORD = "h4SpTrq8Z1k5T7pZ0oT1r9"
-        private const val METHOD = "chacha20-ietf-poly1305"
+        var HOST = "127.0.0.1"
+        var PORT = 11111
+        var PASSWORD = "password"
+        var METHOD = "Method"
         private const val PREFIX = "\u0000\u0080\u00ff"
 
         private const val TAG = "OutlineVpnService"
@@ -35,6 +35,12 @@ class OutlineVpnService : VpnService() {
         private const val NOTIFICATION_COLOR = 0x00BFA5
         private const val NOTIFICATION_SERVICE_ID = 1
 
+
+        private var shadowsocksInfo: MainActivity.ShadowsocksInfo? = null
+
+        fun setShadowsocksInfo(info: MainActivity.ShadowsocksInfo?) {
+            shadowsocksInfo = info
+        }
         fun start(context: Context) {
             context.startService(newIntent(context, ACTION_START))
         }
