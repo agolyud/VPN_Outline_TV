@@ -87,7 +87,15 @@ class MainActivity : ComponentActivity() {
 
     data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)
 
-
+//    override fun onPause() {
+//        super.onPause()
+//        viewModel.stopVpn(this)
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        viewModel.startVpn(this)
+//    }
 
 }
 
