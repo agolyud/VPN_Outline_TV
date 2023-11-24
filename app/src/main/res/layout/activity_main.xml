@@ -22,10 +22,19 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/editTextSsUrl"
         android:layout_centerHorizontal="true"
-        android:text="Сохранить"
+        android:text="Открыть"
         app:layout_constraintTop_toBottomOf="@+id/editTextSsUrl"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="146dp" />
 
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="389dp"
+        android:layout_height="622dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSave"
+        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

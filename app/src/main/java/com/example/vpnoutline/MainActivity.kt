@@ -3,6 +3,8 @@ package com.example.vpnoutline
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.ComponentActivity
@@ -48,6 +50,22 @@ class MainActivity : ComponentActivity() {
             METHOD = shadowsocksInfo.method
 
             startVpn()
+
+
+            val webView: WebView = findViewById(R.id.webView)
+            webView.settings.javaScriptEnabled = true
+
+            // Устанавливаем URL веб-страницы
+            val url = "https://whoer.net"
+            webView.loadUrl(url)
+
+            // Настройка WebViewClient для перехвата URL-адресов внутри приложения
+            webView.webViewClient = WebViewClient()
+
+            // Настройка WebChromeClient для поддержки дополнительных функций, например, заголовка страницы
+
+
+
         }
     }
 
@@ -87,15 +105,15 @@ class MainActivity : ComponentActivity() {
 
     data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)
 
-//    override fun onPause() {
-//        super.onPause()
-//        viewModel.stopVpn(this)
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//        viewModel.startVpn(this)
-//    }
+    override fun onPause() {
+        super.onPause()
+        viewModel.stopVpn(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.startVpn(this)
+    }
 
 }
 
