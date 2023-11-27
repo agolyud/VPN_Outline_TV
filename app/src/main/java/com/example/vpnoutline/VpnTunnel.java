@@ -81,8 +81,7 @@ public class VpnTunnel {
                                     VPN_INTERFACE_PREFIX_LENGTH)
                             .addDnsServer(dnsResolverAddress)
                             .setBlocking(true)
-                            .addAllowedApplication(vpnService.getPackageName());
-                          //  .addDisallowedApplication(vpnService.getPackageName());
+                            .addDisallowedApplication(vpnService.getPackageName());
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 final Network activeNetwork =
