@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var editTextSsUrl: EditText
     private lateinit var buttonSave: Button
+    private lateinit var buttonOpen: Button
     private val viewModel: MainViewModel by viewModels()
     private val vpnPreparation = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
 
         buttonSave = findViewById(R.id.buttonSave)
+        buttonOpen = findViewById(R.id.buttonOpen)
         editTextSsUrl = findViewById(R.id.editTextSsUrl)
 
         buttonSave.setOnClickListener {
@@ -50,7 +52,9 @@ class MainActivity : ComponentActivity() {
             METHOD = shadowsocksInfo.method
 
             startVpn()
+        }
 
+            buttonOpen.setOnClickListener {
 
             val webView: WebView = findViewById(R.id.webView)
             webView.settings.javaScriptEnabled = true
@@ -61,8 +65,6 @@ class MainActivity : ComponentActivity() {
 
             // Настройка WebViewClient для перехвата URL-адресов внутри приложения
             webView.webViewClient = WebViewClient()
-
-            // Настройка WebChromeClient для поддержки дополнительных функций, например, заголовка страницы
 
 
 
@@ -105,15 +107,15 @@ class MainActivity : ComponentActivity() {
 
     data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)
 
-    override fun onPause() {
-        super.onPause()
-        viewModel.stopVpn(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.startVpn(this)
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        viewModel.stopVpn(this)
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        viewModel.startVpn(this)
+//    }
 
 }
 

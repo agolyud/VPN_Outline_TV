@@ -88,6 +88,8 @@ class OutlineVpnService : VpnService() {
         }
     }
 
+
+
     private fun start() = scope.launch(Dispatchers.IO) {
         val isAutoStart = false
 
@@ -240,6 +242,10 @@ class OutlineVpnService : VpnService() {
         stopForeground()
         stopSelf()
     }
+
+
+
+
 
     private fun stopVpnTunnel() {
         vpnTunnel.disconnectTunnel()
