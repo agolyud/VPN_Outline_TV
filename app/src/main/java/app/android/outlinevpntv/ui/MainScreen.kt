@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -34,6 +36,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import app.android.outlinevpntv.R
 import java.util.Locale
@@ -108,12 +111,25 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            OutlinedTextField(
+            TextField(
                 value = ssUrlState,
                 onValueChange = { ssUrlState = it },
                 label = { Text(LocalContext.current.getString(R.string.enter_the_key)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = Color.Gray,
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                shape = RoundedCornerShape(8.dp),
+                singleLine = true,
+                maxLines = 1,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.Black
+                )
             )
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Box(
