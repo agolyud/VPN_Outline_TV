@@ -43,7 +43,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            var isConnected by remember { mutableStateOf(false) }
+
             MainScreen(
+                isConnected = isConnected,
                 onConnectClick = { ssUrl ->
                     val shadowsocksInfo = parseShadowsocksUrl(ssUrl)
                     HOST = shadowsocksInfo.host
@@ -51,9 +54,11 @@ class MainActivity : ComponentActivity() {
                     PASSWORD = shadowsocksInfo.password
                     METHOD = shadowsocksInfo.method
                     startVpn()
+                    isConnected = true
                 },
-                onExitClick = {
+                onDisconnectClick = {
                     viewModel.stopVpn(this)
+                    isConnected = false
                 }
             )
         }
@@ -91,12 +96,11 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
-
 @Composable
 fun MainScreen(
+    isConnected: Boolean,
     onConnectClick: (String) -> Unit,
-    onExitClick: () -> Unit
+    onDisconnectClick: () -> Unit
 ) {
     var ssUrl by remember { mutableStateOf(TextFieldValue("")) }
 
@@ -114,20 +118,20 @@ fun MainScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { onConnectClick(ssUrl.text) },
+            onClick = {
+                if (isConnected) {
+                    onDisconnectClick()
+                } else {
+                    onConnectClick(ssUrl.text)
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Подключиться")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = onExitClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Отключиться")
+            Text(if (isConnected) "Отключиться" else "Подключиться")
         }
     }
 }
+
 
 
 @Preview(showBackground = true)
@@ -135,6 +139,7 @@ fun MainScreen(
 fun DefaultPreview() {
     MainScreen(
         onConnectClick = {},
-        onExitClick = {}
+        onDisconnectClick = {},
+        isConnected = false
     )
 }
