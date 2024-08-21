@@ -1,7 +1,8 @@
 # Outline VPN Client for Android, Android TV, and Google TV
 
-<img src="https://github.com/user-attachments/assets/e77f2b5c-9ed5-4e30-97d3-eedcbd81e184" width=30% height=30%>
-<img src="https://github.com/user-attachments/assets/50482799-e0b2-4ad5-a9c5-dfc82a993cd2" width=30% height=30%>
+<img src="https://github.com/user-attachments/assets/330f7438-0f2d-471c-abd4-9fe4b8468b43" width=30% height=30%>
+<img src="https://github.com/user-attachments/assets/76b471a9-2176-4b12-b208-c49c2271fdef" width=30% height=30%>
+
 
 
 Outline VPN Client is an open-source, lightweight VPN application designed for devices running Android, Android TV, and Google TV. This streamlined version of Outline VPN offers a simplified interface while still providing secure and private internet connectivity. The app allows easy connection to your own Outline VPN server, offering robust encryption and privacy protection.
