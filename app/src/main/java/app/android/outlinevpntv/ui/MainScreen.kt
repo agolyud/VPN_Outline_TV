@@ -25,16 +25,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,6 +60,10 @@ fun MainScreen(
     var ssUrlState by remember { mutableStateOf(ssUrl) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var elapsedTime by remember { mutableIntStateOf(0) }
+    var isEditing by remember { mutableStateOf(false) }
+
+    val focusRequester = remember { FocusRequester() }
+    val focusManager: FocusManager = LocalFocusManager.current
 
     LaunchedEffect(isConnected) {
         elapsedTime = 0
@@ -104,12 +117,12 @@ fun MainScreen(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(250.dp)
-                    .padding(top = 16.dp),
+                    .size(180.dp)
+                    .padding(top = 10.dp),
                 contentScale = ContentScale.Fit
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(15.dp))
 
             TextField(
                 value = ssUrlState,
@@ -121,12 +134,30 @@ fun MainScreen(
                         width = 1.dp,
                         color = Color.Gray,
                         shape = RoundedCornerShape(8.dp)
-                    ),
+                    )
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { focusState ->
+                        isEditing = focusState.isFocused
+                    }
+                    .clickable {
+                        isEditing = true
+                        focusRequester.requestFocus()
+                    },
                 shape = RoundedCornerShape(8.dp),
                 singleLine = true,
                 maxLines = 1,
                 textStyle = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Black
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        isEditing = false
+                        focusManager.clearFocus()
+                    }
                 )
             )
 
@@ -152,14 +183,16 @@ fun MainScreen(
                         shape = RoundedCornerShape(30.dp)
                     )
                     .clickable {
-                        try {
-                            if (isConnected) {
-                                onDisconnectClick()
-                            } else {
-                                onConnectClick(ssUrlState.text)
+                        if (!isEditing) {
+                            try {
+                                if (isConnected) {
+                                    onDisconnectClick()
+                                } else {
+                                    onConnectClick(ssUrlState.text)
+                                }
+                            } catch (e: IllegalArgumentException) {
+                                errorMessage = e.message
                             }
-                        } catch (e: IllegalArgumentException) {
-                            errorMessage = e.message
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -216,6 +249,7 @@ fun MainScreen(
                     color = Color.Red
                 )
             }
+
         }
     }
 }
