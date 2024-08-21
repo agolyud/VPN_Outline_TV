@@ -154,4 +154,5 @@
     <string name="enter_the_key">Enter the key</string>
     <string name="off">OFF</string>
     <string name="on">ON</string>
+    <string name="elapsed_time">Connection time</string>
 </resources>

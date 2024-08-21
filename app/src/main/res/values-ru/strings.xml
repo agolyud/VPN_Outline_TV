@@ -154,4 +154,5 @@
     <string name="enter_the_key">Введите ключ</string>
     <string name="off">Отключиться</string>
     <string name="on">Подключиться</string>
+    <string name="elapsed_time">Время подключения</string>
 </resources>

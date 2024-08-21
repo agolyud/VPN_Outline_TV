@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import app.android.outlinevpntv.R
+import java.util.Locale
 
 @Composable
 fun MainScreen(
@@ -46,6 +47,15 @@ fun MainScreen(
 ) {
     var ssUrlState by remember { mutableStateOf(ssUrl) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var elapsedTime by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(isConnected) {
+        elapsedTime = 0
+        while (isConnected) {
+            kotlinx.coroutines.delay(1000L)
+            elapsedTime += 1
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -141,7 +151,8 @@ fun MainScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Crossfade(
                         targetState = isConnected,
-                        animationSpec = tween(600)
+                        animationSpec = tween(600),
+                        label = "ConnectionStatusCrossfade"
                     ) { connected ->
                         Icon(
                             imageVector = if (connected) Icons.Filled.Pause else Icons.Filled.PlayArrow,
@@ -153,13 +164,41 @@ fun MainScreen(
                     Text(
                         text = if (isConnected)
                             LocalContext.current.getString(R.string.off)
-                                else LocalContext.current.getString(R.string.on),
+                        else LocalContext.current.getString(R.string.on),
                         color = Color.White,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
-            errorMessage?.let { message ->
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = LocalContext.current.getString(R.string.elapsed_time),
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = String.format(
+                    Locale.getDefault(),
+                    "%02d:%02d:%02d",
+                    elapsedTime / 3600,
+                    (elapsedTime % 3600) / 60,
+                    elapsedTime % 60
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Black
+            )
+
+            errorMessage?.let { _message ->
+                Text(
+                    text = _message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Red
+                )
             }
         }
     }
