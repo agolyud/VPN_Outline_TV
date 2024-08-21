@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
@@ -43,7 +44,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var isConnected by remember { mutableStateOf(false) }
+            val isConnected by viewModel.vpnState.observeAsState(false)
 
             MainScreen(
                 isConnected = isConnected,
@@ -54,11 +55,9 @@ class MainActivity : ComponentActivity() {
                     PASSWORD = shadowsocksInfo.password
                     METHOD = shadowsocksInfo.method
                     startVpn()
-                    isConnected = true
                 },
                 onDisconnectClick = {
                     viewModel.stopVpn(this)
-                    isConnected = false
                 }
             )
         }
@@ -102,7 +101,7 @@ fun MainScreen(
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit
 ) {
-    var ssUrl by remember { mutableStateOf(TextFieldValue("")) }
+    var ssUrl by remember { mutableStateOf(TextFieldValue("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp6M1RPMUZuNGNHUE4zQ3NpelhJSGk1@185.236.228.60:59642/?outline=1")) }
 
     Column(
         modifier = Modifier
