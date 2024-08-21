@@ -6,24 +6,35 @@ import android.util.Base64
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,7 +42,6 @@ import app.android.outlinevpntv.OutlineVpnService.Companion.HOST
 import app.android.outlinevpntv.OutlineVpnService.Companion.METHOD
 import app.android.outlinevpntv.OutlineVpnService.Companion.PASSWORD
 import app.android.outlinevpntv.OutlineVpnService.Companion.PORT
-import app.android.outlinevpntv.ui.theme.OutlineVPNtvTheme
 import java.nio.charset.StandardCharsets
 
 class MainActivity : ComponentActivity() {
@@ -49,12 +59,16 @@ class MainActivity : ComponentActivity() {
             MainScreen(
                 isConnected = isConnected,
                 onConnectClick = { ssUrl ->
-                    val shadowsocksInfo = parseShadowsocksUrl(ssUrl)
-                    HOST = shadowsocksInfo.host
-                    PORT = shadowsocksInfo.port
-                    PASSWORD = shadowsocksInfo.password
-                    METHOD = shadowsocksInfo.method
-                    startVpn()
+                    try {
+                        val shadowsocksInfo = parseShadowsocksUrl(ssUrl)
+                        HOST = shadowsocksInfo.host
+                        PORT = shadowsocksInfo.port
+                        PASSWORD = shadowsocksInfo.password
+                        METHOD = shadowsocksInfo.method
+                        startVpn()
+                    } catch (e: IllegalArgumentException) {
+                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                    }
                 },
                 onDisconnectClick = {
                     viewModel.stopVpn(this)
@@ -95,43 +109,93 @@ class MainActivity : ComponentActivity() {
 }
 
 
+
 @Composable
 fun MainScreen(
     isConnected: Boolean,
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit
 ) {
-    var ssUrl by remember { mutableStateOf(TextFieldValue("ss://Y2hhY2hhMjAtaWV0Zi1wb2x5MTMwNTp6M1RPMUZuNGNHUE4zQ3NpelhJSGk1@185.236.228.60:59642/?outline=1")) }
+    var ssUrl by remember { mutableStateOf(TextFieldValue("")) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.White)
     ) {
-        OutlinedTextField(
-            value = ssUrl,
-            onValueChange = { ssUrl = it },
-            label = { Text("Тут ключ") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                if (isConnected) {
-                    onDisconnectClick()
-                } else {
-                    onConnectClick(ssUrl.text)
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(if (isConnected) "Отключиться" else "Подключиться")
+            OutlinedTextField(
+                value = ssUrl,
+                onValueChange = { ssUrl = it },
+                label = { Text("Введите ключ") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = if (isConnected) {
+                                listOf(
+                                    Color(0xFF5EFFB5),
+                                    Color(0xFF2C7151)
+                                )
+                            } else {
+                                listOf(
+                                    Color(0xFFE57373),
+                                    Color(0xFFFF8A65)
+                                )
+                            }
+                        ),
+                        shape = RoundedCornerShape(30.dp)
+                    )
+                    .clickable {
+                        try {
+                            if (isConnected) {
+                                onDisconnectClick()
+                            } else {
+                                onConnectClick(ssUrl.text)
+                            }
+                        } catch (e: IllegalArgumentException) {
+                            errorMessage = e.message
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Crossfade(
+                        targetState = isConnected,
+                        animationSpec = tween(600)
+                    ) { connected ->
+                        Icon(
+                            imageVector = if (connected) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(60.dp)
+                        )
+                    }
+                    Text(
+                        text = if (isConnected) "OFF" else "ON",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            errorMessage?.let { message ->
+
+            }
         }
     }
 }
-
-
 
 @Preview(showBackground = true)
 @Composable
