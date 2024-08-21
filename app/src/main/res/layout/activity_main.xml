@@ -10,44 +10,36 @@
         android:id="@+id/editTextSsUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Введите OutlineKey"
+        android:hint="Тут ключ"
         android:inputType="text"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="0dp" />
 
     <Button
-        android:id="@+id/buttonSave"
+        android:id="@+id/buttonConnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/editTextSsUrl"
         android:layout_centerHorizontal="true"
-        android:text="Открыть"
+        android:text="Подключиться"
+        android:focusable="true"
         app:layout_constraintTop_toBottomOf="@+id/editTextSsUrl"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="146dp" />
 
     <Button
-        android:id="@+id/buttonOpen"
+        android:id="@+id/buttonExit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/editTextSsUrl"
         android:layout_centerHorizontal="true"
-        android:layout_marginStart="36dp"
-        android:layout_marginTop="8dp"
-        android:text="Сайт"
-        app:layout_constraintStart_toEndOf="@+id/buttonSave"
+        android:layout_marginTop="64dp"
+        android:focusable="true"
+        android:text="Отключиться"
         app:layout_constraintTop_toBottomOf="@+id/editTextSsUrl"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="146dp" />
 
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="389dp"
-        android:layout_height="622dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSave"
-        tools:ignore="MissingConstraints" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

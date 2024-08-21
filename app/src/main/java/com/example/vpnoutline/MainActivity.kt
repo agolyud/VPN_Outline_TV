@@ -3,6 +3,7 @@ package com.example.vpnoutline
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
@@ -15,14 +16,14 @@ import com.example.vpnoutline.OutlineVpnService.Companion.PORT
 import com.example.vpnoutline.OutlineVpnService.Companion.PASSWORD
 import com.example.vpnoutline.OutlineVpnService.Companion.METHOD
 import java.nio.charset.StandardCharsets
-import java.util.Base64
+
 
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var editTextSsUrl: EditText
     private lateinit var buttonSave: Button
-    private lateinit var buttonOpen: Button
+    private lateinit var buttonExit: Button
     private val viewModel: MainViewModel by viewModels()
     private val vpnPreparation = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -32,19 +33,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        buttonSave = findViewById(R.id.buttonSave)
-        buttonOpen = findViewById(R.id.buttonOpen)
+        buttonSave = findViewById(R.id.buttonConnect)
         editTextSsUrl = findViewById(R.id.editTextSsUrl)
+        buttonExit = findViewById(R.id.buttonExit)
+
 
         buttonSave.setOnClickListener {
             val ssUrl = editTextSsUrl.text.toString()
             val shadowsocksInfo = parseShadowsocksUrl(ssUrl)
-
-            println("HOST: ${shadowsocksInfo.host}")
-            println("PORT: ${shadowsocksInfo.port}")
-            println("PASSWORD: ${shadowsocksInfo.password}")
-            println("METHOD: ${shadowsocksInfo.method}")
-
 
             HOST = shadowsocksInfo.host
             PORT = shadowsocksInfo.port
@@ -54,22 +50,12 @@ class MainActivity : ComponentActivity() {
             startVpn()
         }
 
-            buttonOpen.setOnClickListener {
 
-            val webView: WebView = findViewById(R.id.webView)
-            webView.settings.javaScriptEnabled = true
-
-            // Устанавливаем URL веб-страницы
-            val url = "https://whoer.net"
-            webView.loadUrl(url)
-
-            // Настройка WebViewClient для перехвата URL-адресов внутри приложения
-            webView.webViewClient = WebViewClient()
-
-
-
+        buttonExit.setOnClickListener {
+            viewModel.stopVpn(this)
         }
     }
+
 
 
     fun startVpn() = VpnService.prepare(this)?.let {
@@ -97,25 +83,11 @@ class MainActivity : ComponentActivity() {
     }
 
     fun decodeBase64(encoded: String): String {
-        val decodedBytes = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Base64.getDecoder().decode(encoded)
-        } else {
-            TODO("VERSION.SDK_INT < O")
-        }
+        val decodedBytes = Base64.decode(encoded, Base64.DEFAULT)
         return String(decodedBytes, StandardCharsets.UTF_8)
     }
 
     data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)
-
-//    override fun onPause() {
-//        super.onPause()
-//        viewModel.stopVpn(this)
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//        viewModel.startVpn(this)
-//    }
 
 }
 
