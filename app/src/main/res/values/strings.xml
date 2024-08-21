@@ -150,4 +150,8 @@
     <item>204.0.0.0/6</item>
     <item>208.0.0.0/4</item>
 </string-array>
+    <string name="invalid_link_format">Invalid link format</string>
+    <string name="enter_the_key">Enter the key</string>
+    <string name="off">OFF</string>
+    <string name="on">ON</string>
 </resources>
