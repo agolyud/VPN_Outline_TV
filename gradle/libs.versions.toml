@@ -11,7 +11,7 @@ composeBom = "2024.04.01"
 runtimeLivedata = "1.6.8"
 playServicesFido = "21.1.0"
 material-icons = "1.6.8"
-fragmentKtx = "1.6.1"
+fragmentKtx = "1.8.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
