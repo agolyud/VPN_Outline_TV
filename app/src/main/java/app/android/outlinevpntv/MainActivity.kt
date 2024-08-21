@@ -19,7 +19,6 @@ import app.android.outlinevpntv.ui.MainScreen
 import java.nio.charset.StandardCharsets
 
 
-
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
@@ -65,19 +64,24 @@ class MainActivity : ComponentActivity() {
     } ?: viewModel.startVpn(this)
 
     private fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
-        val regex = Regex("ss://(.*?)@(.*):(\\d+)")
+        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)")
         val matchResult = regex.find(ssUrl)
         if (matchResult != null) {
             val groups = matchResult.groupValues
             val encodedInfo = groups[1]
             val decodedInfo = decodeBase64(encodedInfo)
-            val parts = decodedInfo.split(":")
-            val method = parts[0]
-            val password = parts[1]
-            val host = groups[2]
+
+            val hostAndPort = groups[2].split("[?#]")[0]
             val port = groups[3].toInt()
 
-            return ShadowsocksInfo(method, password, host, port)
+            val parts = decodedInfo.split(":")
+            if (parts.size != 2) {
+                throw IllegalArgumentException(getString(R.string.invalid_decoded_info_format))
+            }
+            val method = parts[0]
+            val password = parts[1]
+
+            return ShadowsocksInfo(method, password, hostAndPort, port)
         } else {
             throw IllegalArgumentException(getString(R.string.invalid_link_format))
         }

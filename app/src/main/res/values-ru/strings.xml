@@ -155,4 +155,5 @@
     <string name="off">Отключиться</string>
     <string name="on">Подключиться</string>
     <string name="elapsed_time">Время подключения</string>
+    <string name="invalid_decoded_info_format">Недействительный формат переключателя</string>
 </resources>
