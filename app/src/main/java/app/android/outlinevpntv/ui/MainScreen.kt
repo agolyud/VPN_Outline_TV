@@ -39,10 +39,11 @@ import app.android.outlinevpntv.R
 @Composable
 fun MainScreen(
     isConnected: Boolean,
+    ssUrl: TextFieldValue,
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit
 ) {
-    var ssUrl by remember { mutableStateOf(TextFieldValue("")) }
+    var ssUrlState by remember { mutableStateOf(ssUrl) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Box(
@@ -97,8 +98,8 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
-                value = ssUrl,
-                onValueChange = { ssUrl = it },
+                value = ssUrlState,
+                onValueChange = { ssUrlState = it },
                 label = { Text("Введите ключ") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -128,7 +129,7 @@ fun MainScreen(
                             if (isConnected) {
                                 onDisconnectClick()
                             } else {
-                                onConnectClick(ssUrl.text)
+                                onConnectClick(ssUrlState.text)
                             }
                         } catch (e: IllegalArgumentException) {
                             errorMessage = e.message
@@ -167,6 +168,7 @@ fun DefaultPreview() {
     MainScreen(
         onConnectClick = {},
         onDisconnectClick = {},
+        ssUrl = TextFieldValue(""),
         isConnected = false
     )
 }

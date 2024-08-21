@@ -10,12 +10,15 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.text.input.TextFieldValue
 import app.android.outlinevpntv.OutlineVpnService.Companion.HOST
 import app.android.outlinevpntv.OutlineVpnService.Companion.METHOD
 import app.android.outlinevpntv.OutlineVpnService.Companion.PASSWORD
 import app.android.outlinevpntv.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.ui.MainScreen
 import java.nio.charset.StandardCharsets
+
+
 
 class MainActivity : ComponentActivity() {
 
@@ -24,16 +27,23 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result -> if (result.resultCode == RESULT_OK) viewModel.startVpn(this) }
 
+    private lateinit var preferencesManager: PreferencesManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        preferencesManager = PreferencesManager(this)
         setContent {
             val isConnected by viewModel.vpnState.observeAsState(false)
+            var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
 
             MainScreen(
                 isConnected = isConnected,
-                onConnectClick = { ssUrl ->
+                ssUrl = ssUrl,
+                onConnectClick = { ssUrlText ->
                     try {
-                        val shadowsocksInfo = parseShadowsocksUrl(ssUrl)
+                        val shadowsocksInfo = parseShadowsocksUrl(ssUrlText)
+                        preferencesManager.saveVpnKey(ssUrlText)
+                        ssUrl = TextFieldValue(ssUrlText)
                         HOST = shadowsocksInfo.host
                         PORT = shadowsocksInfo.port
                         PASSWORD = shadowsocksInfo.password
@@ -80,7 +90,3 @@ class MainActivity : ComponentActivity() {
 
     data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)
 }
-
-
-
-
