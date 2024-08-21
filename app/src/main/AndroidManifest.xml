@@ -23,7 +23,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.VPNOutline"
+        android:theme="@style/Theme.OutlineVPNtv"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
