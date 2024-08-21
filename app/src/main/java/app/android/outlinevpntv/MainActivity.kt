@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
 
             return ShadowsocksInfo(method, password, host, port)
         } else {
-            throw IllegalArgumentException("Неверный формат ссылки Outline")
+            throw IllegalArgumentException(getString(R.string.invalid_link_format))
         }
     }
 

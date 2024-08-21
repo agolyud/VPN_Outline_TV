@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import app.android.outlinevpntv.R
@@ -87,7 +88,7 @@ fun MainScreen(
             verticalArrangement = Arrangement.Top
         ) {
             Image(
-                painter = painterResource(id = R.drawable.logo), // Убедитесь, что ваш логотип добавлен в ресурсы
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier
                     .size(250.dp)
@@ -100,7 +101,7 @@ fun MainScreen(
             OutlinedTextField(
                 value = ssUrlState,
                 onValueChange = { ssUrlState = it },
-                label = { Text("Введите ключ") },
+                label = { Text(LocalContext.current.getString(R.string.enter_the_key)) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(32.dp))
@@ -150,7 +151,9 @@ fun MainScreen(
                         )
                     }
                     Text(
-                        text = if (isConnected) "OFF" else "ON",
+                        text = if (isConnected)
+                            LocalContext.current.getString(R.string.off)
+                                else LocalContext.current.getString(R.string.on),
                         color = Color.White,
                         style = MaterialTheme.typography.bodyMedium
                     )
