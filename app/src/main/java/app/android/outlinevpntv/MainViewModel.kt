@@ -16,9 +16,10 @@ class MainViewModel : ViewModel() {
     fun startVpn(context: Context) {
         try {
             OutlineVpnService.start(context)
-            waitForVpnConnection()
+            waitForVpnConnection(context)
         } catch (e: Exception) {
             _vpnState.value = false
+            throw e
         }
     }
 
@@ -27,28 +28,28 @@ class MainViewModel : ViewModel() {
         waitForVpnDisconnection()
     }
 
-    private fun waitForVpnConnection() {
+    private fun waitForVpnConnection(context: Context) {
         viewModelScope.launch {
-            delay(2000) // Задержка перед первой проверкой (2 секунды)
+            delay(2000)
             while (true) {
                 val isVpnConnected = OutlineVpnService.isVpnConnected()
                 Log.d("MainViewModel", "VPN connected: $isVpnConnected")
                 _vpnState.postValue(isVpnConnected)
-                if (isVpnConnected) break // Если подключение успешно, выходим из цикла
-                delay(1000) // Повторяем проверку каждые 1 секунду
+                if (isVpnConnected) break
+                delay(1000)
             }
         }
     }
 
     private fun waitForVpnDisconnection() {
         viewModelScope.launch {
-            delay(2000) // Задержка перед первой проверкой (2 секунды)
+            delay(2000)
             while (true) {
                 val isVpnConnected = OutlineVpnService.isVpnConnected()
                 Log.d("MainViewModel", "VPN connected: $isVpnConnected")
                 _vpnState.postValue(isVpnConnected)
-                if (!isVpnConnected) break // Если отключение успешно, выходим из цикла
-                delay(1000) // Повторяем проверку каждые 1 секунду
+                if (!isVpnConnected) break
+                delay(1000)
             }
         }
     }

@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val isConnected by viewModel.vpnState.observeAsState(false)
             var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
+            var errorMessage by remember { mutableStateOf<String?>(null) }
 
             MainScreen(
                 isConnected = isConnected,
@@ -47,21 +48,38 @@ class MainActivity : ComponentActivity() {
                         PORT = shadowsocksInfo.port
                         PASSWORD = shadowsocksInfo.password
                         METHOD = shadowsocksInfo.method
-                        startVpn()
+                        startVpn { error ->
+                            errorMessage = error?.message
+                        }
                     } catch (e: IllegalArgumentException) {
-                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                        errorMessage = e.message
+                    } catch (e: Exception) {
+                        errorMessage = e.localizedMessage
                     }
                 },
                 onDisconnectClick = {
                     viewModel.stopVpn(this)
                 }
             )
+
+            if (errorMessage != null) {
+                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
-    private fun startVpn() = VpnService.prepare(this)?.let {
-        vpnPreparation.launch(it)
-    } ?: viewModel.startVpn(this)
+    private fun startVpn(onError: (Exception?) -> Unit) {
+        val preparationIntent = VpnService.prepare(this)
+        if (preparationIntent != null) {
+            vpnPreparation.launch(preparationIntent)
+        } else {
+            try {
+                viewModel.startVpn(this)
+            } catch (e: Exception) {
+                onError(e)
+            }
+        }
+    }
 
     private fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
         val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:[#/?]?.*)?")
