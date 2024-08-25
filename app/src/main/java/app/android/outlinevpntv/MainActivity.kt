@@ -64,14 +64,14 @@ class MainActivity : ComponentActivity() {
     } ?: viewModel.startVpn(this)
 
     private fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
-        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)")
+        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:[#/?]?.*)?")
         val matchResult = regex.find(ssUrl)
         if (matchResult != null) {
             val groups = matchResult.groupValues
             val encodedInfo = groups[1]
             val decodedInfo = decodeBase64(encodedInfo)
 
-            val hostAndPort = groups[2].split("[?#]")[0]
+            val host = groups[2]
             val port = groups[3].toInt()
 
             val parts = decodedInfo.split(":")
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
             val method = parts[0]
             val password = parts[1]
 
-            return ShadowsocksInfo(method, password, hostAndPort, port)
+            return ShadowsocksInfo(method, password, host, port)
         } else {
             throw IllegalArgumentException(getString(R.string.invalid_link_format))
         }
