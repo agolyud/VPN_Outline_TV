@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val isConnected by viewModel.vpnState.observeAsState(false)
             var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
+            var errorMessage by remember { mutableStateOf<String?>(null) }
 
             MainScreen(
                 isConnected = isConnected,
@@ -47,31 +48,48 @@ class MainActivity : ComponentActivity() {
                         PORT = shadowsocksInfo.port
                         PASSWORD = shadowsocksInfo.password
                         METHOD = shadowsocksInfo.method
-                        startVpn()
+                        startVpn { error ->
+                            errorMessage = error?.message
+                        }
                     } catch (e: IllegalArgumentException) {
-                        Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
+                        errorMessage = e.message
+                    } catch (e: Exception) {
+                        errorMessage = e.localizedMessage
                     }
                 },
                 onDisconnectClick = {
                     viewModel.stopVpn(this)
                 }
             )
+
+            if (errorMessage != null) {
+                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
-    private fun startVpn() = VpnService.prepare(this)?.let {
-        vpnPreparation.launch(it)
-    } ?: viewModel.startVpn(this)
+    private fun startVpn(onError: (Exception?) -> Unit) {
+        val preparationIntent = VpnService.prepare(this)
+        if (preparationIntent != null) {
+            vpnPreparation.launch(preparationIntent)
+        } else {
+            try {
+                viewModel.startVpn(this)
+            } catch (e: Exception) {
+                onError(e)
+            }
+        }
+    }
 
     private fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
-        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)")
+        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:[#/?]?.*)?")
         val matchResult = regex.find(ssUrl)
         if (matchResult != null) {
             val groups = matchResult.groupValues
             val encodedInfo = groups[1]
             val decodedInfo = decodeBase64(encodedInfo)
 
-            val hostAndPort = groups[2].split("[?#]")[0]
+            val host = groups[2]
             val port = groups[3].toInt()
 
             val parts = decodedInfo.split(":")
@@ -81,7 +99,7 @@ class MainActivity : ComponentActivity() {
             val method = parts[0]
             val password = parts[1]
 
-            return ShadowsocksInfo(method, password, hostAndPort, port)
+            return ShadowsocksInfo(method, password, host, port)
         } else {
             throw IllegalArgumentException(getString(R.string.invalid_link_format))
         }
