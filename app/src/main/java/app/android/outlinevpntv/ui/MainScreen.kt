@@ -30,6 +30,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -48,28 +49,33 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import app.android.outlinevpntv.R
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 @Composable
 fun MainScreen(
     isConnected: Boolean,
     ssUrl: TextFieldValue,
+    vpnStartTime: Long,
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit
 ) {
     var ssUrlState by remember { mutableStateOf(ssUrl) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var elapsedTime by remember { mutableIntStateOf(0) }
+    var elapsedTime by remember { mutableStateOf(0) }
     var isEditing by remember { mutableStateOf(false) }
 
     val focusRequester = remember { FocusRequester() }
     val focusManager: FocusManager = LocalFocusManager.current
 
-    LaunchedEffect(isConnected) {
-        elapsedTime = 0
-        while (isConnected) {
-            kotlinx.coroutines.delay(1000L)
-            elapsedTime += 1
+    LaunchedEffect(isConnected, vpnStartTime) {
+        if (isConnected && vpnStartTime > 0) {
+            while (true) {
+                delay(1000L)
+                elapsedTime = ((System.currentTimeMillis() - vpnStartTime) / 1000).toInt()
+            }
+        } else {
+            elapsedTime = 0
         }
     }
 
@@ -261,6 +267,7 @@ fun DefaultPreview() {
         onConnectClick = {},
         onDisconnectClick = {},
         ssUrl = TextFieldValue(""),
-        isConnected = false
+        isConnected = false,
+        vpnStartTime = 0
     )
 }

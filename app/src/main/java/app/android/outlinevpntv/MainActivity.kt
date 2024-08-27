@@ -31,14 +31,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferencesManager = PreferencesManager(this)
+
+        // Проверяем состояние VPN при запуске активности
+        checkVpnState()
+
         setContent {
             val isConnected by viewModel.vpnState.observeAsState(false)
+            val vpnStartTime = viewModel.getVpnStartTime()
             var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
             var errorMessage by remember { mutableStateOf<String?>(null) }
 
             MainScreen(
                 isConnected = isConnected,
                 ssUrl = ssUrl,
+                vpnStartTime = vpnStartTime,
                 onConnectClick = { ssUrlText ->
                     try {
                         val shadowsocksInfo = parseShadowsocksUrl(ssUrlText)
@@ -48,9 +54,7 @@ class MainActivity : ComponentActivity() {
                         PORT = shadowsocksInfo.port
                         PASSWORD = shadowsocksInfo.password
                         METHOD = shadowsocksInfo.method
-                        startVpn { error ->
-                            errorMessage = error?.message
-                        }
+                        viewModel.startVpn(this)
                     } catch (e: IllegalArgumentException) {
                         errorMessage = e.message
                     } catch (e: Exception) {
@@ -66,6 +70,16 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkVpnState()
+    }
+
+    private fun checkVpnState() {
+        val isVpnConnected = OutlineVpnService.isVpnConnected()
+        viewModel.setVpnState(isVpnConnected)
     }
 
     private fun startVpn(onError: (Exception?) -> Unit) {
