@@ -37,12 +37,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val isConnected by viewModel.vpnState.observeAsState(false)
+            val vpnStartTime = viewModel.getVpnStartTime()
             var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
             var errorMessage by remember { mutableStateOf<String?>(null) }
 
             MainScreen(
                 isConnected = isConnected,
                 ssUrl = ssUrl,
+                vpnStartTime = vpnStartTime,
                 onConnectClick = { ssUrlText ->
                     try {
                         val shadowsocksInfo = parseShadowsocksUrl(ssUrlText)
@@ -52,9 +54,7 @@ class MainActivity : ComponentActivity() {
                         PORT = shadowsocksInfo.port
                         PASSWORD = shadowsocksInfo.password
                         METHOD = shadowsocksInfo.method
-                        startVpn { error ->
-                            errorMessage = error?.message
-                        }
+                        viewModel.startVpn(this)
                     } catch (e: IllegalArgumentException) {
                         errorMessage = e.message
                     } catch (e: Exception) {
