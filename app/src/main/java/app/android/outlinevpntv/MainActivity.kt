@@ -31,6 +31,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preferencesManager = PreferencesManager(this)
+
+        // Проверяем состояние VPN при запуске активности
+        checkVpnState()
+
         setContent {
             val isConnected by viewModel.vpnState.observeAsState(false)
             var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
@@ -66,6 +70,16 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        checkVpnState()
+    }
+
+    private fun checkVpnState() {
+        val isVpnConnected = OutlineVpnService.isVpnConnected()
+        viewModel.setVpnState(isVpnConnected)
     }
 
     private fun startVpn(onError: (Exception?) -> Unit) {

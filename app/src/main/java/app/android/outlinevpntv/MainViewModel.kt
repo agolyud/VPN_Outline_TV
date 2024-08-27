@@ -23,6 +23,10 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun setVpnState(isConnected: Boolean) {
+        _vpnState.value = isConnected
+    }
+
     fun stopVpn(context: Context) {
         OutlineVpnService.stop(context)
         waitForVpnDisconnection()
