@@ -3,6 +3,7 @@ package app.android.outlinevpntv
 import android.net.VpnService
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -54,7 +55,9 @@ class MainActivity : ComponentActivity() {
                         PORT = shadowsocksInfo.port
                         PASSWORD = shadowsocksInfo.password
                         METHOD = shadowsocksInfo.method
-                        viewModel.startVpn(this)
+                        startVpn { e ->
+                            errorMessage = e?.localizedMessage
+                        }
                     } catch (e: IllegalArgumentException) {
                         errorMessage = e.message
                     } catch (e: Exception) {
@@ -82,18 +85,23 @@ class MainActivity : ComponentActivity() {
         viewModel.setVpnState(isVpnConnected)
     }
 
-    private fun startVpn(onError: (Exception?) -> Unit) {
+    private fun startVpn(onError: (Exception?) -> Unit = {}) {
+        Log.d("VPN", "Starting VPN process")
         val preparationIntent = VpnService.prepare(this)
         if (preparationIntent != null) {
+            Log.d("VPN", "Requesting VPN permission")
             vpnPreparation.launch(preparationIntent)
         } else {
             try {
+                Log.d("VPN", "Permission already granted, starting VPN")
                 viewModel.startVpn(this)
             } catch (e: Exception) {
+                Log.e("VPN", "Error starting VPN", e)
                 onError(e)
             }
         }
     }
+
 
     private fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
         val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:[#/?]?.*)?")
