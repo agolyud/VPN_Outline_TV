@@ -95,17 +95,22 @@ class OutlineVpnService : VpnService() {
             password = PASSWORD
         }
 
+        Log.d(TAG, "startVpn: Config -> HOST=$HOST, PORT=$PORT, CIPHER=$METHOD, PASSWORD=$PASSWORD")
+
         val client = try {
             Client(configCopy)
         } catch (e: Exception) {
-            Log.i(TAG, "startVpn: Invalid configuration")
+            Log.i(TAG, "startVpn: Invalid configuration", e)
             return@launch
         }
+
+        Log.d(TAG, "startVpn: Shadowsocks Client created")
 
         if (!isAutoStart) {
             try {
                 val errorCode = checkServerConnectivity(client)
                 if (errorCode != ErrorCode.NO_ERROR && errorCode != ErrorCode.UDP_RELAY_NOT_ENABLED) {
+                    Log.i(TAG, "startVpn: Server connectivity check failed with error $errorCode")
                     return@launch
                 }
             } catch (e: Exception) {
@@ -113,6 +118,8 @@ class OutlineVpnService : VpnService() {
                 return@launch
             }
         }
+
+        Log.d(TAG, "startVpn: Establishing VPN tunnel...")
 
         if (!vpnTunnel.establishVpn()) {
             Log.i(TAG, "startVpn: Failed to establish the VPN")
@@ -123,12 +130,14 @@ class OutlineVpnService : VpnService() {
         try {
             vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled)
             isRunning = true // Установка isRunning после успешного подключения
+            Log.i(TAG, "startVpn: VPN tunnel established successfully")
             startForegroundWithNotification()
         } catch (e: Exception) {
             Log.e(TAG, "startVpn: Failed to connect the tunnel", e)
             isRunning = false
         }
     }
+
 
     private fun stopVpn() {
         stopVpnTunnel()
