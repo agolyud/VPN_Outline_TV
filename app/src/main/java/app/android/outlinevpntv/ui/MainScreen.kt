@@ -1,5 +1,8 @@
 package app.android.outlinevpntv.ui
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Pause
@@ -28,9 +31,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -40,18 +45,20 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import app.android.outlinevpntv.R
 import kotlinx.coroutines.delay
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     isConnected: Boolean,
@@ -67,6 +74,7 @@ fun MainScreen(
 
     val focusRequester = remember { FocusRequester() }
     val focusManager: FocusManager = LocalFocusManager.current
+    val context = LocalContext.current
 
     LaunchedEffect(isConnected, vpnStartTime) {
         if (isConnected && vpnStartTime > 0) {
@@ -119,11 +127,51 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+
+            TopAppBar(
+                title = {
+
+                    Spacer(modifier = Modifier.weight(1f))
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = LocalContext.current.getString(R.string.version) + " " + versionName(context),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = "by AlexGolyd",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+
+
+
+                },
+                actions = {
+                    IconButton(onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/agolyud/VPN_Outline_TV"))
+                        context.startActivity(intent)
+                    }) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
+                            contentDescription = "Open GitHub",
+                            tint = Color.Black
+                        )
+                    }
+                }
+            )
+
+
+
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .size(180.dp)
+                    .size(130.dp)
                     .padding(top = 10.dp),
                 contentScale = ContentScale.Fit
             )
@@ -167,11 +215,11 @@ fun MainScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(15.dp))
 
             Box(
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(120.dp)
                     .background(
                         brush = Brush.verticalGradient(
                             colors = if (isConnected) {
@@ -255,10 +303,20 @@ fun MainScreen(
                     color = Color.Red
                 )
             }
-
         }
     }
 }
+
+fun versionName(context: Context): String {
+    return try {
+        val packageManager = context.packageManager
+        val packageInfo = packageManager.getPackageInfo(context.packageName, 0)
+        packageInfo.versionName ?: "unknown"
+    } catch (e: Exception) {
+        "unknown"
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
