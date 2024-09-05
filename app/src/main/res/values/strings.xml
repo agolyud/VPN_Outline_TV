@@ -156,4 +156,5 @@
     <string name="on">ON</string>
     <string name="elapsed_time">Connection time</string>
     <string name="invalid_decoded_info_format">Invalid switch format</string>
+    <string name="version">Version</string>
 </resources>
