@@ -23,7 +23,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val startTime = System.currentTimeMillis()
             preferencesManager.saveVpnStartTime(startTime)
             _vpnState.value = true
-            waitForVpnConnection(context)
+            waitForVpnConnection()
         } catch (e: Exception) {
             _vpnState.value = false
             throw e
@@ -46,7 +46,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    private fun waitForVpnConnection(context: Context) {
+    private fun waitForVpnConnection() {
         viewModelScope.launch {
             delay(2000)
             while (true) {

@@ -163,4 +163,6 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="clear">Clear</string>
+    <string name="paste_from_clipboard">Paste from clipboard</string>
+    <string name="clipboard_empty">clipboard_empty</string>
 </resources>

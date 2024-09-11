@@ -1,19 +1,14 @@
 package app.android.outlinevpntv.ui
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +31,14 @@ import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.model.ShadowsocksInfo
 import app.android.outlinevpntv.data.remote.parseShadowsocksUrl
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
+
 
 @Composable
 fun ServerDialog(
@@ -50,13 +53,32 @@ fun ServerDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
 
     AlertDialog(
         onDismissRequest = {
             if (!isLoading) onDismiss()
         },
         title = {
-            Text(stringResource(id = R.string.edit_server_info))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(id = R.string.edit_server_info),
+                    fontSize = 17.sp // Уменьшаем размер текста
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+
+                IconButton(onClick = {
+                    val clipboardText = clipboardManager.getText()?.text
+                    if (!clipboardText.isNullOrEmpty()) {
+                        serverKey = clipboardText
+                    } else {
+                        Toast.makeText(context, R.string.clipboard_empty, Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Icon(imageVector = Icons.Filled.ContentPaste, contentDescription = "Paste from clipboard")
+                }
+            }
         },
         text = {
             Column {
@@ -102,15 +124,11 @@ fun ServerDialog(
                     Text(stringResource(id = R.string.clear))
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
-
                 TextButton(onClick = {
                     if (!isLoading) onDismiss()
                 }) {
                     Text(stringResource(id = R.string.cancel))
                 }
-
-                Spacer(modifier = Modifier.width(8.dp))
 
                 TextButton(
                     onClick = {
@@ -147,5 +165,6 @@ fun DialogPrewiew() {
         onClear = {}
     )
 }
+
 
 

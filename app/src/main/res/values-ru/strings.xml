@@ -163,4 +163,6 @@
     <string name="save">Сохранить</string>
     <string name="clear">Очистить</string>
     <string name="cancel">Отменить</string>
+    <string name="paste_from_clipboard">Вставить из буфера обмена</string>
+    <string name="clipboard_empty">Буфер обмена пустой</string>
 </resources>
