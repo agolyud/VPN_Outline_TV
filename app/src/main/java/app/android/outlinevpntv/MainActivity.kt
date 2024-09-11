@@ -165,7 +165,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun parseShadowsocksSsUrl(ssUrl: String): ShadowsocksInfo = withContext(Dispatchers.IO) {
-        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:[#/?]?.*)?")
+        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?.*)?")
         val matchResult = regex.find(ssUrl)
         if (matchResult != null) {
             val groups = matchResult.groupValues
@@ -182,7 +182,7 @@ class MainActivity : ComponentActivity() {
             val method = parts[0]
             val password = parts[1]
 
-             ShadowsocksInfo(method, password, host, port)
+            ShadowsocksInfo(method, password, host, port)
         } else {
             throw IllegalArgumentException(getString(R.string.invalid_link_format))
         }
