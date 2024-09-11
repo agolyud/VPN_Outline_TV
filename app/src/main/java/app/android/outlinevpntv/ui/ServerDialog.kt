@@ -64,7 +64,7 @@ fun ServerDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(id = R.string.edit_server_info),
-                    fontSize = 17.sp // Уменьшаем размер текста
+                    fontSize = 17.sp
                 )
                 Spacer(modifier = Modifier.width(8.dp))
 

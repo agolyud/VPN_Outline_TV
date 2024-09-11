@@ -171,9 +171,9 @@ fun MainScreen(
             Spacer(modifier = Modifier.height(15.dp))
 
             ServerItem(
-                serverImage = painterResource(id = R.drawable.logo),
                 serverName = serverNameState,
                 serverIp = ssUrlState.text,
+                hostIp = HOST,
                 onForwardIconClick = { isDialogOpen = true },
             )
 
@@ -195,11 +195,9 @@ fun MainScreen(
                         isDialogOpen = false
                     },
                     onClear = {
-                        // Очищаем SharedPreferences
                         preferencesManager.clearVpnStartTime()
                         preferencesManager.saveServerName("Server Name")
                         preferencesManager.saveVpnKey("")
-                        // Обновляем состояние
                         serverNameState = "Server Name"
                         ssUrlState = TextFieldValue("")
                     }
