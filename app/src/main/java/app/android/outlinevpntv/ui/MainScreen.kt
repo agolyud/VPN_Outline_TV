@@ -47,7 +47,6 @@ import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PASSWORD
 import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
-import app.android.outlinevpntv.data.remote.getCountryCodeByIp
 import app.android.outlinevpntv.utils.versionName
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -68,7 +67,7 @@ fun MainScreen(
     var serverNameState by remember { mutableStateOf(serverName) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var elapsedTime by remember { mutableStateOf(0) }
-    var isEditing by remember { mutableStateOf(false) }
+    val isEditing by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var isDialogOpen by remember { mutableStateOf(false) }
 

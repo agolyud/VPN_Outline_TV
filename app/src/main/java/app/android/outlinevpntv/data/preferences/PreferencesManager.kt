@@ -48,6 +48,5 @@ class PreferencesManager(context: Context) {
         private const val KEY_VPN = "vpn_key"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
         private const val KEY_SERVER_NAME = "server_name"
-        private const val KEY_FLAG_URL = "flag_url"
     }
 }

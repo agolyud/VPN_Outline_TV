@@ -62,12 +62,10 @@ fun ServerItem(
             flagUrl = savedFlagUrl
         } else {
             val countryCode = getCountryCodeByIp(hostIp)
-            if (countryCode != null) {
-                val newFlagUrl = "https://flagsapi.com/$countryCode/flat/64.png"
-                Log.d("ServerItem", "Флаг загружен с API: $newFlagUrl")
-                flagUrl = newFlagUrl
-                preferencesManager.saveFlagUrl(hostIp, newFlagUrl) // Сохраняем флаг
-            }
+            val newFlagUrl = "https://flagsapi.com/$countryCode/flat/64.png"
+            Log.d("ServerItem", "Флаг загружен с API: $newFlagUrl")
+            flagUrl = newFlagUrl
+            preferencesManager.saveFlagUrl(hostIp, newFlagUrl) // Сохраняем флаг
         }
     }
 
@@ -92,12 +90,12 @@ fun ServerItem(
                         .size(40.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop,
-                    placeholder = painterResource(id = R.drawable.logo),
-                    error = painterResource(id = R.drawable.logo)
+                    placeholder = painterResource(id = R.drawable.flag),
+                    error = painterResource(id = R.drawable.flag)
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.logo),
+                    painter = painterResource(id = R.drawable.flag),
                     contentDescription = "Placeholder",
                     modifier = Modifier
                         .size(40.dp)
