@@ -161,5 +161,6 @@
     <string name="server_name">Имя Сервера</string>
     <string name="outline_key">Outline Ключ</string>
     <string name="save">Сохранить</string>
-    <string name="сancel">Отменить</string>
+    <string name="clear">Очистить</string>
+    <string name="cancel">Отменить</string>
 </resources>

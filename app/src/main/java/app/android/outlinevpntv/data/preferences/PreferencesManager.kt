@@ -35,6 +35,10 @@ class PreferencesManager(context: Context) {
         return preferences.getString(KEY_SERVER_NAME, null)
     }
 
+    fun clearAll() {
+        preferences.edit().clear().apply()
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN = "vpn_key"

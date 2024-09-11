@@ -46,6 +46,7 @@ import app.android.outlinevpntv.domain.OutlineVpnService.Companion.METHOD
 import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PASSWORD
 import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.utils.versionName
 import kotlinx.coroutines.delay
 import java.util.Locale
@@ -55,7 +56,8 @@ import java.util.Locale
 fun MainScreen(
     isConnected: Boolean,
     ssUrl: TextFieldValue,
-    serverName: String, // Добавляем параметр serverName
+    serverName: String,
+    preferencesManager: PreferencesManager,
     vpnStartTime: Long,
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit,
@@ -191,6 +193,15 @@ fun MainScreen(
                             METHOD = shadowsocksInfo.method
                         }
                         isDialogOpen = false
+                    },
+                    onClear = {
+                        // Очищаем SharedPreferences
+                        preferencesManager.clearVpnStartTime()
+                        preferencesManager.saveServerName("Server Name")
+                        preferencesManager.saveVpnKey("")
+                        // Обновляем состояние
+                        serverNameState = "Server Name"
+                        ssUrlState = TextFieldValue("")
                     }
                 )
             }
@@ -297,6 +308,7 @@ fun DefaultPreview() {
         onDisconnectClick = {},
         ssUrl = TextFieldValue("ss://5df7962e-f9fe-41e6-ab49-ed96ccb856a7@172.66.44.135:80?path=%2F&security=none&encryption=none&host=v2ra1.ecrgpk.workers.dev&type=ws#United States%20#1269%20/%20OutlineKeys.com"),
         isConnected = false,
+        preferencesManager = PreferencesManager(LocalContext.current),
         serverName = "Server Name",
         onSaveServer = { _, _ -> },
         vpnStartTime = 0

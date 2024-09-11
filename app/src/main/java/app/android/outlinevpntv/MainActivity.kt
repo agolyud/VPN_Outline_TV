@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
                 isConnected = isConnected,
                 ssUrl = ssUrl.value,
                 serverName = serverName.value,
+                preferencesManager = preferencesManager,
                 vpnStartTime = vpnStartTime,
                 onConnectClick = { ssUrlText ->
                     scope.launch {

@@ -161,5 +161,6 @@
     <string name="server_name">Server Name</string>
     <string name="outline_key">Outline Key</string>
     <string name="save">Save</string>
-    <string name="сancel">Cancel</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
 </resources>
