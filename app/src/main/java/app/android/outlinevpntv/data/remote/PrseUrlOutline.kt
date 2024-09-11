@@ -46,7 +46,7 @@ fun fetchJsonFromUrl(urlString: String): String {
 }
 
 fun parseShadowsocksSsUrl(ssUrl: String): ShadowsocksInfo {
-    val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?.*)?")
+    val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:\\?.*|#.*)?")
     val matchResult = regex.find(ssUrl)
     val groups = matchResult?.groupValues ?: throw IllegalArgumentException("Invalid link format")
 
