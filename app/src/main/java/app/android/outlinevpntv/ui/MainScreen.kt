@@ -71,6 +71,8 @@ import app.android.outlinevpntv.OutlineVpnService.Companion.METHOD
 import app.android.outlinevpntv.OutlineVpnService.Companion.PASSWORD
 import app.android.outlinevpntv.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.ShadowsocksInfo
+import app.android.outlinevpntv.parseShadowsocksUrl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -459,53 +461,3 @@ fun DefaultPreview() {
 }
 
 
-suspend fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
-    Log.d("VPN", "Parsing URL: $ssUrl")
-    return if (ssUrl.startsWith("ssconf://")) {
-        parseShadowsocksConfUrl(ssUrl)
-    } else if (ssUrl.startsWith("ss://")) {
-        parseShadowsocksSsUrl(ssUrl)
-    } else {
-        throw IllegalArgumentException("Invalid URL format")
-    }
-}
-
-private suspend fun parseShadowsocksConfUrl(ssConfUrl: String): ShadowsocksInfo = withContext(
-    Dispatchers.IO) {
-
-    if (!ssConfUrl.startsWith("ssconf://")) {
-        throw IllegalArgumentException("Invalid ssconf URL format")
-    }
-
-    val urlWithoutFragment = ssConfUrl.split("#")[0]
-    val httpsUrl = urlWithoutFragment.replace("ssconf://", "https://")
-    val jsonResponse = fetchJsonFromUrl(httpsUrl)
-    val jsonObject = JSONObject(jsonResponse)
-    val host = jsonObject.getString("server")
-    val portString = jsonObject.getString("server_port")
-    val port = portString.toInt()  // Преобразуем порт из строки в Int
-    val password = jsonObject.getString("password")  // Пароль используем как есть, без декодирования
-    val method = jsonObject.getString("method")
-
-    ShadowsocksInfo(method, password, host, port)
-}
-
-suspend fun fetchJsonFromUrl(urlString: String): String {
-    val url = URL(urlString)
-    val connection = url.openConnection() as HttpURLConnection
-    return connection.inputStream.bufferedReader().use { it.readText() }
-}
-
-suspend fun parseShadowsocksSsUrl(ssUrl: String): ShadowsocksInfo {
-    val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?.*)?")
-    val matchResult = regex.find(ssUrl)
-    val groups = matchResult?.groupValues ?: throw IllegalArgumentException("Invalid link format")
-
-    val decodedInfo = String(Base64.decode(groups[1], Base64.DEFAULT), StandardCharsets.UTF_8)
-    val parts = decodedInfo.split(":")
-    if (parts.size != 2) throw IllegalArgumentException("Invalid decoded info format")
-
-    return ShadowsocksInfo(parts[0], parts[1], groups[2], groups[3].toInt())
-}
-
-data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)

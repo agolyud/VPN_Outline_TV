@@ -41,7 +41,6 @@ class MainActivity : ComponentActivity() {
         checkVpnState()
 
         setContent {
-            // Используем remember для сохранения состояний при изменениях
             val isConnected by viewModel.vpnState.observeAsState(false)
             val vpnStartTime = viewModel.getVpnStartTime()
             val ssUrl = remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
