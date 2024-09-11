@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package app.android.outlinevpntv;
+package app.android.outlinevpntv.domain;
 
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -27,6 +27,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import app.android.outlinevpntv.R;
 import tun2socks.Tun2socks;
 import tun2socks.Tunnel;
 

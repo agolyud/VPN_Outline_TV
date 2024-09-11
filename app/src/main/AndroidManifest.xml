@@ -36,7 +36,7 @@
         </activity>
 
         <service
-            android:name=".OutlineVpnService"
+            android:name=".domain.OutlineVpnService"
             android:exported="false"
             android:permission="android.permission.BIND_VPN_SERVICE">
             <intent-filter>

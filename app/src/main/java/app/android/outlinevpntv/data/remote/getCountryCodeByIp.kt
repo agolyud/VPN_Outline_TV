@@ -1,4 +1,4 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.data.remote
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

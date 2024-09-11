@@ -1,4 +1,4 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.data.preferences
 
 import android.content.Context
 import android.content.SharedPreferences

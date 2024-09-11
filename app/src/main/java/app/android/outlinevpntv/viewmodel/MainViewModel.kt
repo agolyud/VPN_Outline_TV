@@ -1,13 +1,13 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.android.outlinevpntv.data.preferences.PreferencesManager
+import app.android.outlinevpntv.domain.OutlineVpnService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -70,8 +70,3 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
-
-
-
-
-

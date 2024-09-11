@@ -1,16 +1,12 @@
 package app.android.outlinevpntv.ui
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Base64
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
@@ -18,69 +14,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
-import app.android.outlinevpntv.MainActivity
-import app.android.outlinevpntv.OutlineVpnService.Companion.HOST
-import app.android.outlinevpntv.OutlineVpnService.Companion.METHOD
-import app.android.outlinevpntv.OutlineVpnService.Companion.PASSWORD
-import app.android.outlinevpntv.OutlineVpnService.Companion.PORT
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.HOST
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.METHOD
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PASSWORD
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.R
-import app.android.outlinevpntv.ShadowsocksInfo
-import app.android.outlinevpntv.parseShadowsocksUrl
-import kotlinx.coroutines.Dispatchers
+import app.android.outlinevpntv.utils.versionName
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -255,7 +222,6 @@ fun MainScreen(
                                 if (isConnected) {
                                     onDisconnectClick()
                                 } else {
-                                    // Используем уже сохраненные данные для подключения
                                     onConnectClick(ssUrlState.text)
                                 }
                             } catch (e: IllegalArgumentException) {
@@ -321,130 +287,7 @@ fun MainScreen(
     }
 }
 
-@Composable
-fun ServerDialog(
-    currentName: String,
-    currentKey: String,
-    onDismiss: () -> Unit,
-    onSave: (String, String, ShadowsocksInfo?) -> Unit
-) {
-    var serverName by remember { mutableStateOf(currentName) }
-    var serverKey by remember { mutableStateOf(currentKey) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(text = "Edit Server Info")
-        },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = serverName,
-                    onValueChange = { serverName = it },
-                    label = { Text("Server Name") }
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = serverKey,
-                    onValueChange = { serverKey = it },
-                    label = { Text("Server Key") }
-                )
-                errorMessage?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Red
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                scope.launch {
-                    try {
-                        val shadowsocksInfo = parseShadowsocksUrl(serverKey)
-                        onSave(serverName, serverKey, shadowsocksInfo)
-                    } catch (e: Exception) {
-                        errorMessage = e.message
-                    }
-                }
-            }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun ServerItem(
-    serverImage: Painter,
-    serverName: String,
-    serverIp: String,
-    onForwardIconClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 22.dp)
-            .clickable(onClick = onForwardIconClick)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterStart),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = serverImage,
-                contentDescription = "Server Image",
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-            )
-
-            Spacer(modifier = Modifier.width(15.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = serverName,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = serverIp,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Filled.FilterList,
-                contentDescription = "Forward Arrow",
-                tint = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-    }
-}
-
-fun versionName(context: Context): String {
-    return try {
-        val packageManager = context.packageManager
-        val packageInfo = packageManager.getPackageInfo(context.packageName, 0)
-        packageInfo.versionName ?: "unknown"
-    } catch (e: Exception) {
-        "unknown"
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

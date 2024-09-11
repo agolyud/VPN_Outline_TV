@@ -1,6 +1,7 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.data.remote
 
 import android.util.Base64
+import app.android.outlinevpntv.data.model.ShadowsocksInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -31,8 +32,8 @@ private suspend fun parseShadowsocksConfUrl(ssConfUrl: String): ShadowsocksInfo 
     val jsonObject = JSONObject(jsonResponse)
     val host = jsonObject.getString("server")
     val portString = jsonObject.getString("server_port")
-    val port = portString.toInt()  // Преобразуем порт из строки в Int
-    val password = jsonObject.getString("password")  // Пароль используем как есть, без декодирования
+    val port = portString.toInt()
+    val password = jsonObject.getString("password")
     val method = jsonObject.getString("method")
 
     ShadowsocksInfo(method, password, host, port)
@@ -55,5 +56,3 @@ fun parseShadowsocksSsUrl(ssUrl: String): ShadowsocksInfo {
 
     return ShadowsocksInfo(parts[0], parts[1], groups[2], groups[3].toInt())
 }
-
-data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)

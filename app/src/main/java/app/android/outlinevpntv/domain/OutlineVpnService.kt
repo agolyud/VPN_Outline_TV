@@ -1,4 +1,4 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.domain
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.util.Log
-import com.google.android.gms.fido.fido2.api.common.ErrorCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

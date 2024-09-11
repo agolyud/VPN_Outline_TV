@@ -2,8 +2,6 @@ package app.android.outlinevpntv
 
 import android.net.VpnService
 import android.os.Bundle
-import android.util.Base64
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,16 +10,11 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.text.input.TextFieldValue
-import app.android.outlinevpntv.OutlineVpnService.Companion.HOST
-import app.android.outlinevpntv.OutlineVpnService.Companion.METHOD
-import app.android.outlinevpntv.OutlineVpnService.Companion.PASSWORD
-import app.android.outlinevpntv.OutlineVpnService.Companion.PORT
+import app.android.outlinevpntv.data.preferences.PreferencesManager
+import app.android.outlinevpntv.domain.OutlineVpnService
 import app.android.outlinevpntv.ui.MainScreen
+import app.android.outlinevpntv.viewmodel.MainViewModel
 import kotlinx.coroutines.*
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import java.nio.charset.StandardCharsets
 
 class MainActivity : ComponentActivity() {
 
