@@ -157,4 +157,9 @@
     <string name="elapsed_time">Время подключения</string>
     <string name="invalid_decoded_info_format">Недействительный формат переключателя</string>
     <string name="version">Версия</string>
+    <string name="edit_server_info">Изменить информацию о сервере</string>
+    <string name="server_name">Имя Сервера</string>
+    <string name="outline_key">Outline Ключ</string>
+    <string name="save">Сохранить</string>
+    <string name="сancel">Отменить</string>
 </resources>

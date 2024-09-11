@@ -157,4 +157,9 @@
     <string name="elapsed_time">Connection time</string>
     <string name="invalid_decoded_info_format">Invalid switch format</string>
     <string name="version">Version</string>
+    <string name="edit_server_info">Edit Server Info</string>
+    <string name="server_name">Server Name</string>
+    <string name="outline_key">Outline Key</string>
+    <string name="save">Save</string>
+    <string name="сancel">Cancel</string>
 </resources>
