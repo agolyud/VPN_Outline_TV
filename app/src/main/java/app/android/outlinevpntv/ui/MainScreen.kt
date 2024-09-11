@@ -70,7 +70,6 @@ fun MainScreen(
     var elapsedTime by remember { mutableStateOf(0) }
     var isEditing by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    var serverName by remember { mutableStateOf("Server Name") }
     var isDialogOpen by remember { mutableStateOf(false) }
 
 

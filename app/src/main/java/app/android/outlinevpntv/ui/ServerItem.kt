@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,18 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.getCountryCodeByIp
-import app.android.outlinevpntv.domain.OutlineVpnService
-import coil.compose.rememberAsyncImagePainter
 
 import coil.compose.AsyncImage
 
@@ -55,7 +49,6 @@ fun ServerItem(
     preferencesManager: PreferencesManager
 ) {
     var flagUrl by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
 
     LaunchedEffect(hostIp) {
         if (hostIp == "127.0.0.1") {
