@@ -172,7 +172,7 @@ fun MainScreen(
                 serverImage = painterResource(id = R.drawable.logo),
                 serverName = serverNameState,
                 serverIp = ssUrlState.text,
-                onForwardIconClick = { isDialogOpen = true }
+                onForwardIconClick = { isDialogOpen = true },
             )
 
             if (isDialogOpen) {
@@ -295,7 +295,7 @@ fun DefaultPreview() {
     MainScreen(
         onConnectClick = {},
         onDisconnectClick = {},
-        ssUrl = TextFieldValue(""),
+        ssUrl = TextFieldValue("ss://5df7962e-f9fe-41e6-ab49-ed96ccb856a7@172.66.44.135:80?path=%2F&security=none&encryption=none&host=v2ra1.ecrgpk.workers.dev&type=ws#United States%20#1269%20/%20OutlineKeys.com"),
         isConnected = false,
         serverName = "Server Name",
         onSaveServer = { _, _ -> },

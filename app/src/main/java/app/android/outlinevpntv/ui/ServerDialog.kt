@@ -57,13 +57,15 @@ fun ServerDialog(
                 OutlinedTextField(
                     value = serverName,
                     onValueChange = { serverName = it },
-                    label = { Text(stringResource(id = R.string.server_name)) }
+                    label = { Text(stringResource(id = R.string.server_name)) },
+                    singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = serverKey,
                     onValueChange = { serverKey = it },
-                    label = { Text(stringResource(id = R.string.outline_key)) }
+                    label = { Text(stringResource(id = R.string.outline_key)) },
+                    singleLine = true
                 )
                 errorMessage?.let {
                     Text(
