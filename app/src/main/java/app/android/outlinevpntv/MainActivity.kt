@@ -11,7 +11,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.text.input.TextFieldValue
 import app.android.outlinevpntv.data.preferences.PreferencesManager
+import app.android.outlinevpntv.data.remote.parseShadowsocksUrl
 import app.android.outlinevpntv.domain.OutlineVpnService
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.HOST
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.METHOD
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PASSWORD
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.ui.MainScreen
 import app.android.outlinevpntv.viewmodel.MainViewModel
 import kotlinx.coroutines.*
@@ -51,14 +56,21 @@ class MainActivity : ComponentActivity() {
                 onConnectClick = { ssUrlText ->
                     scope.launch {
                         try {
-                            preferencesManager.saveVpnKey(ssUrlText)
-                            ssUrl.value = TextFieldValue(ssUrlText)
+                            val shadowsocksInfo = parseShadowsocksUrl(ssUrlText)
+
+                            serverName.value = shadowsocksInfo.host
+                            HOST = shadowsocksInfo.host
+                            PORT = shadowsocksInfo.port
+                            PASSWORD = shadowsocksInfo.password
+                            METHOD = shadowsocksInfo.method
+
                             startVpn { e ->
                                 if (e != null) {
                                     errorMessage.value = e.localizedMessage
                                 }
                             }
                         } catch (e: Exception) {
+                            // Обрабатываем ошибку
                             errorMessage.value = e.localizedMessage
                         }
                     }
