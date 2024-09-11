@@ -10,8 +10,9 @@ activityCompose = "1.9.1"
 composeBom = "2024.04.01"
 runtimeLivedata = "1.6.8"
 playServicesFido = "21.1.0"
-material-icons = "1.6.8"
-fragmentKtx = "1.8.2"
+material-icons = "1.7.1"
+fragmentKtx = "1.8.3"
+coil-kt = "2.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,12 @@ androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtim
 play-services-fido = { group = "com.google.android.gms", name = "play-services-fido", version.ref = "playServicesFido" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material-icons" }
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
+coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil-kt" }
+coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil-kt" }
+
+
+
+
 
 
 [plugins]

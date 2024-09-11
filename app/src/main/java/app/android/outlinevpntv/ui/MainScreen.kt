@@ -1,6 +1,5 @@
 package app.android.outlinevpntv.ui
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -8,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
@@ -16,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,33 +25,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.HOST
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.METHOD
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PASSWORD
+import app.android.outlinevpntv.domain.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
+import app.android.outlinevpntv.utils.versionName
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -63,18 +56,21 @@ import java.util.Locale
 fun MainScreen(
     isConnected: Boolean,
     ssUrl: TextFieldValue,
+    serverName: String,
+    preferencesManager: PreferencesManager,
     vpnStartTime: Long,
     onConnectClick: (String) -> Unit,
-    onDisconnectClick: () -> Unit
+    onDisconnectClick: () -> Unit,
+    onSaveServer: (String, String) -> Unit
 ) {
     var ssUrlState by remember { mutableStateOf(ssUrl) }
+    var serverNameState by remember { mutableStateOf(serverName) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var elapsedTime by remember { mutableStateOf(0) }
-    var isEditing by remember { mutableStateOf(false) }
-
-    val focusRequester = remember { FocusRequester() }
-    val focusManager: FocusManager = LocalFocusManager.current
+    val isEditing by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    var isDialogOpen by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(isConnected, vpnStartTime) {
         if (isConnected && vpnStartTime > 0) {
@@ -148,8 +144,6 @@ fun MainScreen(
                         )
                     }
 
-
-
                 },
                 actions = {
                     IconButton(onClick = {
@@ -165,8 +159,6 @@ fun MainScreen(
                 }
             )
 
-
-
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
@@ -178,42 +170,40 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            TextField(
-                value = ssUrlState,
-                onValueChange = { ssUrlState = it },
-                label = { Text(LocalContext.current.getString(R.string.enter_the_key)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { focusState ->
-                        isEditing = focusState.isFocused
-                    }
-                    .clickable {
-                        isEditing = true
-                        focusRequester.requestFocus()
+            ServerItem(
+                serverName = serverNameState,
+                serverIp = ssUrlState.text,
+                hostIp = HOST,
+                onForwardIconClick = { isDialogOpen = true },
+                preferencesManager = preferencesManager,
+            )
+
+            if (isDialogOpen) {
+                ServerDialog(
+                    currentName = serverNameState,
+                    currentKey = ssUrlState.text,
+                    onDismiss = { isDialogOpen = false },
+                    onSave = { newName, newKey, shadowsocksInfo ->
+                        serverNameState = newName
+                        ssUrlState = TextFieldValue(newKey)
+                        onSaveServer(newName, newKey)
+                        if (shadowsocksInfo != null) {
+                            HOST = shadowsocksInfo.host
+                            PORT = shadowsocksInfo.port
+                            PASSWORD = shadowsocksInfo.password
+                            METHOD = shadowsocksInfo.method
+                        }
+                        isDialogOpen = false
                     },
-                shape = RoundedCornerShape(8.dp),
-                singleLine = true,
-                maxLines = 1,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.Black
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        isEditing = false
-                        focusManager.clearFocus()
+                    onClear = {
+                        preferencesManager.clearVpnStartTime()
+                        preferencesManager.saveServerName("Server Name")
+                        preferencesManager.saveVpnKey("")
+                        serverNameState = "Server Name"
+                        ssUrlState = TextFieldValue("")
                     }
                 )
-            )
+            }
 
             Spacer(modifier = Modifier.height(15.dp))
 
@@ -307,15 +297,6 @@ fun MainScreen(
     }
 }
 
-fun versionName(context: Context): String {
-    return try {
-        val packageManager = context.packageManager
-        val packageInfo = packageManager.getPackageInfo(context.packageName, 0)
-        packageInfo.versionName ?: "unknown"
-    } catch (e: Exception) {
-        "unknown"
-    }
-}
 
 
 @Preview(showBackground = true)
@@ -324,8 +305,13 @@ fun DefaultPreview() {
     MainScreen(
         onConnectClick = {},
         onDisconnectClick = {},
-        ssUrl = TextFieldValue(""),
+        ssUrl = TextFieldValue("ss://5df7962e-f9fe-41e6-ab49-ed96ccb856a7@172.66.44.135:80?path=%2F&security=none&encryption=none&host=v2ra1.ecrgpk.workers.dev&type=ws#United States%20#1269%20/%20OutlineKeys.com"),
         isConnected = false,
+        preferencesManager = PreferencesManager(LocalContext.current),
+        serverName = "Server Name",
+        onSaveServer = { _, _ -> },
         vpnStartTime = 0
     )
 }
+
+

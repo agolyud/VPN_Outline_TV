@@ -1,13 +1,13 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.viewmodel
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.android.outlinevpntv.data.preferences.PreferencesManager
+import app.android.outlinevpntv.domain.OutlineVpnService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -23,7 +23,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val startTime = System.currentTimeMillis()
             preferencesManager.saveVpnStartTime(startTime)
             _vpnState.value = true
-            waitForVpnConnection(context)
+            waitForVpnConnection()
         } catch (e: Exception) {
             _vpnState.value = false
             throw e
@@ -46,7 +46,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    private fun waitForVpnConnection(context: Context) {
+    private fun waitForVpnConnection() {
         viewModelScope.launch {
             delay(2000)
             while (true) {
@@ -70,8 +70,3 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
-
-
-
-
-

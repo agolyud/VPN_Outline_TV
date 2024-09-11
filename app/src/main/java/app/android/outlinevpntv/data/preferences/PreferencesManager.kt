@@ -1,4 +1,4 @@
-package app.android.outlinevpntv
+package app.android.outlinevpntv.data.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -27,9 +27,26 @@ class PreferencesManager(context: Context) {
         preferences.edit().remove(KEY_VPN_START_TIME).apply()
     }
 
+    fun saveServerName(name: String) {
+        preferences.edit().putString(KEY_SERVER_NAME, name).apply()
+    }
+
+    fun getServerName(): String? {
+        return preferences.getString(KEY_SERVER_NAME, null)
+    }
+
+    fun saveFlagUrl(ip: String, flagUrl: String) {
+        preferences.edit().putString("flag_$ip", flagUrl).apply()
+    }
+
+    fun getFlagUrl(ip: String): String? {
+        return preferences.getString("flag_$ip", null)
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN = "vpn_key"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
+        private const val KEY_SERVER_NAME = "server_name"
     }
 }
