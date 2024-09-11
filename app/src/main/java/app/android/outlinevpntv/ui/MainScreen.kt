@@ -3,6 +3,8 @@ package app.android.outlinevpntv.ui
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Base64
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.filled.Pause
@@ -21,23 +23,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -45,6 +54,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -54,8 +64,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
+import app.android.outlinevpntv.MainActivity
+import app.android.outlinevpntv.OutlineVpnService.Companion.HOST
+import app.android.outlinevpntv.OutlineVpnService.Companion.METHOD
+import app.android.outlinevpntv.OutlineVpnService.Companion.PASSWORD
+import app.android.outlinevpntv.OutlineVpnService.Companion.PORT
 import app.android.outlinevpntv.R
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,18 +86,20 @@ import java.util.Locale
 fun MainScreen(
     isConnected: Boolean,
     ssUrl: TextFieldValue,
+    serverName: String, // Добавляем параметр serverName
     vpnStartTime: Long,
     onConnectClick: (String) -> Unit,
-    onDisconnectClick: () -> Unit
+    onDisconnectClick: () -> Unit,
+    onSaveServer: (String, String) -> Unit
 ) {
     var ssUrlState by remember { mutableStateOf(ssUrl) }
+    var serverNameState by remember { mutableStateOf(serverName) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var elapsedTime by remember { mutableStateOf(0) }
     var isEditing by remember { mutableStateOf(false) }
-
-    val focusRequester = remember { FocusRequester() }
-    val focusManager: FocusManager = LocalFocusManager.current
     val context = LocalContext.current
+    var serverName by remember { mutableStateOf("Server Name") }
+    var isDialogOpen by remember { mutableStateOf(false) }
 
     LaunchedEffect(isConnected, vpnStartTime) {
         if (isConnected && vpnStartTime > 0) {
@@ -148,8 +173,6 @@ fun MainScreen(
                         )
                     }
 
-
-
                 },
                 actions = {
                     IconButton(onClick = {
@@ -165,8 +188,6 @@ fun MainScreen(
                 }
             )
 
-
-
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
@@ -178,42 +199,32 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            TextField(
-                value = ssUrlState,
-                onValueChange = { ssUrlState = it },
-                label = { Text(LocalContext.current.getString(R.string.enter_the_key)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        width = 1.dp,
-                        color = Color.Gray,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { focusState ->
-                        isEditing = focusState.isFocused
-                    }
-                    .clickable {
-                        isEditing = true
-                        focusRequester.requestFocus()
-                    },
-                shape = RoundedCornerShape(8.dp),
-                singleLine = true,
-                maxLines = 1,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
-                    color = Color.Black
-                ),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        isEditing = false
-                        focusManager.clearFocus()
+            ServerItem(
+                serverImage = painterResource(id = R.drawable.logo),
+                serverName = serverNameState,
+                serverIp = ssUrlState.text,
+                onForwardIconClick = { isDialogOpen = true }
+            )
+
+            if (isDialogOpen) {
+                ServerDialog(
+                    currentName = serverNameState,
+                    currentKey = ssUrlState.text,
+                    onDismiss = { isDialogOpen = false },
+                    onSave = { newName, newKey, shadowsocksInfo ->
+                        serverNameState = newName
+                        ssUrlState = TextFieldValue(newKey)
+                        onSaveServer(newName, newKey)
+                        if (shadowsocksInfo != null) {
+                            HOST = shadowsocksInfo.host
+                            PORT = shadowsocksInfo.port
+                            PASSWORD = shadowsocksInfo.password
+                            METHOD = shadowsocksInfo.method
+                        }
+                        isDialogOpen = false
                     }
                 )
-            )
+            }
 
             Spacer(modifier = Modifier.height(15.dp))
 
@@ -242,6 +253,7 @@ fun MainScreen(
                                 if (isConnected) {
                                     onDisconnectClick()
                                 } else {
+                                    // Используем уже сохраненные данные для подключения
                                     onConnectClick(ssUrlState.text)
                                 }
                             } catch (e: IllegalArgumentException) {
@@ -307,6 +319,121 @@ fun MainScreen(
     }
 }
 
+@Composable
+fun ServerDialog(
+    currentName: String,
+    currentKey: String,
+    onDismiss: () -> Unit,
+    onSave: (String, String, ShadowsocksInfo?) -> Unit
+) {
+    var serverName by remember { mutableStateOf(currentName) }
+    var serverKey by remember { mutableStateOf(currentKey) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = "Edit Server Info")
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = serverName,
+                    onValueChange = { serverName = it },
+                    label = { Text("Server Name") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = serverKey,
+                    onValueChange = { serverKey = it },
+                    label = { Text("Server Key") }
+                )
+                errorMessage?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Red
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                scope.launch {
+                    try {
+                        val shadowsocksInfo = parseShadowsocksUrl(serverKey)
+                        onSave(serverName, serverKey, shadowsocksInfo)
+                    } catch (e: Exception) {
+                        errorMessage = e.message
+                    }
+                }
+            }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun ServerItem(
+    serverImage: Painter,
+    serverName: String,
+    serverIp: String,
+    onForwardIconClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 22.dp)
+            .clickable(onClick = onForwardIconClick)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.CenterStart),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = serverImage,
+                contentDescription = "Server Image",
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+            )
+
+            Spacer(modifier = Modifier.width(15.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = serverName,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = serverIp,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+
+            Icon(
+                imageVector = Icons.Filled.FilterList,
+                contentDescription = "Forward Arrow",
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
 fun versionName(context: Context): String {
     return try {
         val packageManager = context.packageManager
@@ -317,7 +444,6 @@ fun versionName(context: Context): String {
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
@@ -326,6 +452,60 @@ fun DefaultPreview() {
         onDisconnectClick = {},
         ssUrl = TextFieldValue(""),
         isConnected = false,
+        serverName = "Server Name",
+        onSaveServer = { _, _ -> },
         vpnStartTime = 0
     )
 }
+
+
+suspend fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
+    Log.d("VPN", "Parsing URL: $ssUrl")
+    return if (ssUrl.startsWith("ssconf://")) {
+        parseShadowsocksConfUrl(ssUrl)
+    } else if (ssUrl.startsWith("ss://")) {
+        parseShadowsocksSsUrl(ssUrl)
+    } else {
+        throw IllegalArgumentException("Invalid URL format")
+    }
+}
+
+private suspend fun parseShadowsocksConfUrl(ssConfUrl: String): ShadowsocksInfo = withContext(
+    Dispatchers.IO) {
+
+    if (!ssConfUrl.startsWith("ssconf://")) {
+        throw IllegalArgumentException("Invalid ssconf URL format")
+    }
+
+    val urlWithoutFragment = ssConfUrl.split("#")[0]
+    val httpsUrl = urlWithoutFragment.replace("ssconf://", "https://")
+    val jsonResponse = fetchJsonFromUrl(httpsUrl)
+    val jsonObject = JSONObject(jsonResponse)
+    val host = jsonObject.getString("server")
+    val portString = jsonObject.getString("server_port")
+    val port = portString.toInt()  // Преобразуем порт из строки в Int
+    val password = jsonObject.getString("password")  // Пароль используем как есть, без декодирования
+    val method = jsonObject.getString("method")
+
+    ShadowsocksInfo(method, password, host, port)
+}
+
+suspend fun fetchJsonFromUrl(urlString: String): String {
+    val url = URL(urlString)
+    val connection = url.openConnection() as HttpURLConnection
+    return connection.inputStream.bufferedReader().use { it.readText() }
+}
+
+suspend fun parseShadowsocksSsUrl(ssUrl: String): ShadowsocksInfo {
+    val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?.*)?")
+    val matchResult = regex.find(ssUrl)
+    val groups = matchResult?.groupValues ?: throw IllegalArgumentException("Invalid link format")
+
+    val decodedInfo = String(Base64.decode(groups[1], Base64.DEFAULT), StandardCharsets.UTF_8)
+    val parts = decodedInfo.split(":")
+    if (parts.size != 2) throw IllegalArgumentException("Invalid decoded info format")
+
+    return ShadowsocksInfo(parts[0], parts[1], groups[2], groups[3].toInt())
+}
+
+data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)

@@ -72,4 +72,6 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.fragment.ktx)
 
+    implementation(libs.coil.kt)
+    implementation(libs.coil.kt.coil.compose)
 }

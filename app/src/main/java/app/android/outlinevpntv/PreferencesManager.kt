@@ -27,9 +27,18 @@ class PreferencesManager(context: Context) {
         preferences.edit().remove(KEY_VPN_START_TIME).apply()
     }
 
+    fun saveServerName(name: String) {
+        preferences.edit().putString(KEY_SERVER_NAME, name).apply()
+    }
+
+    fun getServerName(): String? {
+        return preferences.getString(KEY_SERVER_NAME, null)
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN = "vpn_key"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
+        private const val KEY_SERVER_NAME = "server_name"  // Новый ключ для имени сервера
     }
 }

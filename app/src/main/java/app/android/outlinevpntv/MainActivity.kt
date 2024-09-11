@@ -41,53 +41,53 @@ class MainActivity : ComponentActivity() {
         checkVpnState()
 
         setContent {
+            // Используем remember для сохранения состояний при изменениях
             val isConnected by viewModel.vpnState.observeAsState(false)
             val vpnStartTime = viewModel.getVpnStartTime()
-            var ssUrl by remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
-            var errorMessage by remember { mutableStateOf<String?>(null) }
+            val ssUrl = remember { mutableStateOf(TextFieldValue(preferencesManager.getVpnKey() ?: "")) }
+            val serverName = remember { mutableStateOf(preferencesManager.getServerName() ?: "Server Name") }
+            val errorMessage = remember { mutableStateOf<String?>(null) }
+
             val scope = rememberCoroutineScope()
 
             MainScreen(
                 isConnected = isConnected,
-                ssUrl = ssUrl,
+                ssUrl = ssUrl.value,
+                serverName = serverName.value,
                 vpnStartTime = vpnStartTime,
                 onConnectClick = { ssUrlText ->
                     scope.launch {
                         try {
-                            val shadowsocksInfo = parseShadowsocksUrl(ssUrlText)
                             preferencesManager.saveVpnKey(ssUrlText)
-                            ssUrl = TextFieldValue(ssUrlText)
-                            HOST = shadowsocksInfo.host
-                            PORT = shadowsocksInfo.port
-                            PASSWORD = shadowsocksInfo.password
-                            METHOD = shadowsocksInfo.method
+                            ssUrl.value = TextFieldValue(ssUrlText)
                             startVpn { e ->
                                 if (e != null) {
-                                    Log.e("VPN", "Error starting VPN", e)
-                                    errorMessage = e.localizedMessage
+                                    errorMessage.value = e.localizedMessage
                                 }
                             }
-                        } catch (e: IllegalArgumentException) {
-                            Log.e("VPN", "Invalid argument: ${e.message}")
-                            errorMessage = e.message
                         } catch (e: Exception) {
-                            Log.e("VPN", "Exception: ${e.localizedMessage}")
-                            errorMessage = e.localizedMessage
+                            errorMessage.value = e.localizedMessage
                         }
                     }
                 },
                 onDisconnectClick = {
                     viewModel.stopVpn(this)
+                },
+                onSaveServer = { newServerName, newVpnKey ->
+                    serverName.value = newServerName
+                    ssUrl.value = TextFieldValue(newVpnKey)
+                    preferencesManager.saveServerName(newServerName)
+                    preferencesManager.saveVpnKey(newVpnKey)
                 }
             )
 
-            if (errorMessage != null) {
-                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
+            errorMessage.value?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    override fun onResume() {
+        override fun onResume() {
         super.onResume()
         checkVpnState()
     }
@@ -105,99 +105,8 @@ class MainActivity : ComponentActivity() {
             try {
                 viewModel.startVpn(this)
             } catch (e: Exception) {
-                Log.e("VPN", "Error starting VPN", e)
                 onError(e)
             }
         }
     }
-
-
-    private suspend fun parseShadowsocksUrl(ssUrl: String): ShadowsocksInfo {
-        Log.d("VPN", "Parsing URL: $ssUrl")
-        return if (ssUrl.startsWith("ssconf://")) {
-            parseShadowsocksConfUrl(ssUrl)
-        } else if (ssUrl.startsWith("ss://")) {
-            parseShadowsocksSsUrl(ssUrl)
-        } else {
-            throw IllegalArgumentException(getString(R.string.invalid_link_format))
-        }
-    }
-
-
-    private suspend fun parseShadowsocksConfUrl(ssConfUrl: String): ShadowsocksInfo = withContext(Dispatchers.IO) {
-
-        if (!ssConfUrl.startsWith("ssconf://")) {
-            throw IllegalArgumentException("Invalid ssconf URL format")
-        }
-
-        val urlWithoutFragment = ssConfUrl.split("#")[0]
-        val httpsUrl = urlWithoutFragment.replace("ssconf://", "https://")
-        val jsonResponse = fetchJsonFromUrl(httpsUrl)
-        val jsonObject = JSONObject(jsonResponse)
-        val host = jsonObject.getString("server")
-        val portString = jsonObject.getString("server_port")
-        val port = portString.toInt()  // Преобразуем порт из строки в Int
-        val password = jsonObject.getString("password")  // Пароль используем как есть, без декодирования
-        val method = jsonObject.getString("method")
-
-        ShadowsocksInfo(method, password, host, port)
-    }
-
-
-    private suspend fun fetchJsonFromUrl(urlString: String): String = withContext(Dispatchers.IO) {
-        val url = URL(urlString)
-        val connection = url.openConnection() as HttpURLConnection
-        try {
-            connection.requestMethod = "GET"
-            connection.connect()
-
-            val responseCode = connection.responseCode
-
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                throw Exception("Failed to fetch data, HTTP response code: $responseCode")
-            }
-
-            val inputStream = connection.inputStream
-            inputStream.bufferedReader().use { it.readText() }
-        } finally {
-            connection.disconnect()
-        }
-    }
-
-    private suspend fun parseShadowsocksSsUrl(ssUrl: String): ShadowsocksInfo = withContext(Dispatchers.IO) {
-        val regex = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?.*)?")
-        val matchResult = regex.find(ssUrl)
-        if (matchResult != null) {
-            val groups = matchResult.groupValues
-            val encodedInfo = groups[1]
-            val decodedInfo = decodeBase64(encodedInfo)
-
-            val host = groups[2]
-            val port = groups[3].toInt()
-
-            val parts = decodedInfo.split(":")
-            if (parts.size != 2) {
-                throw IllegalArgumentException(getString(R.string.invalid_decoded_info_format))
-            }
-            val method = parts[0]
-            val password = parts[1]
-
-            ShadowsocksInfo(method, password, host, port)
-        } else {
-            throw IllegalArgumentException(getString(R.string.invalid_link_format))
-        }
-    }
-
-
-    private fun decodeBase64(encoded: String): String {
-        return try {
-            val decodedBytes = Base64.decode(encoded, Base64.DEFAULT)
-            String(decodedBytes, StandardCharsets.UTF_8)
-        } catch (e: Exception) {
-            Log.e("VPN", "Error decoding Base64: ${e.message}")
-            throw e
-        }
-    }
-
-    data class ShadowsocksInfo(val method: String, val password: String, val host: String, val port: Int)
 }
