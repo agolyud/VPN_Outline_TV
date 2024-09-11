@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.model.ShadowsocksInfo
@@ -37,7 +40,8 @@ fun ServerDialog(
     currentName: String,
     currentKey: String,
     onDismiss: () -> Unit,
-    onSave: (String, String, ShadowsocksInfo?) -> Unit
+    onSave: (String, String, ShadowsocksInfo?) -> Unit,
+    onClear: () -> Unit // Добавляем функцию для очистки данных
 ) {
     var serverName by remember { mutableStateOf(currentName) }
     var serverKey by remember { mutableStateOf(currentKey) }
@@ -87,34 +91,59 @@ fun ServerDialog(
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    scope.launch {
-                        isLoading = true
-                        try {
-                            val shadowsocksInfo = parseShadowsocksUrl(serverKey)
-                            onSave(serverName, serverKey, shadowsocksInfo)
-                            isLoading = false
-                        } catch (e: Exception) {
-                            errorMessage = e.message
-                            isLoading = false
-                        }
-                    }
-                },
-                enabled = !isLoading
-            ) {
-                Text(stringResource(id = R.string.save))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    if (!isLoading) onDismiss()
+            Row {
+                TextButton(onClick = {
+                    serverName = "Server Name"
+                    serverKey = ""
+                    onClear()
+                }) {
+                    Text(stringResource(id = R.string.clear))
                 }
-            ) {
-                Text(stringResource(id = R.string.сancel))
+                
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TextButton(onClick = {
+                    if (!isLoading) onDismiss()
+                }) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            isLoading = true
+                            try {
+                                val shadowsocksInfo = parseShadowsocksUrl(serverKey)
+                                onSave(serverName, serverKey, shadowsocksInfo)
+                                isLoading = false
+                            } catch (e: Exception) {
+                                errorMessage = e.message
+                                isLoading = false
+                            }
+                        }
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(stringResource(id = R.string.save))
+                }
+
             }
         }
     )
 }
+
+@Preview
+@Composable
+fun DialogPrewiew() {
+    ServerDialog(
+        currentName = "Server Name",
+        currentKey = "",
+        onDismiss = {},
+        onSave = { _, _, _ -> },
+        onClear = {}
+    )
+}
+
 
