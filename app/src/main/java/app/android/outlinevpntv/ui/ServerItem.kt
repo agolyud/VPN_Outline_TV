@@ -1,6 +1,7 @@
 package app.android.outlinevpntv.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,49 +38,58 @@ fun ServerItem(
     serverIp: String,
     onForwardIconClick: () -> Unit
 ) {
-    Row(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .clickable(onClick = onForwardIconClick),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(8.dp)
+            .clip(MaterialTheme.shapes.medium)
+            .background(Color(0xFFEEEEEE))
+            .padding(2.dp)
+            .clickable(onClick = onForwardIconClick)
     ) {
-        Image(
-            painter = serverImage,
-            contentDescription = null,
-            modifier = Modifier.size(40.dp),
-            contentScale = ContentScale.Fit
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = serverName,
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = serverIp,
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        IconButton(onClick = { onForwardIconClick() }) {
-            Icon(
-                imageVector = Icons.Filled.FilterList,
+            Image(
+                painter = serverImage,
                 contentDescription = null,
-                tint = Color.Black
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = serverName,
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = serverIp,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            IconButton(onClick = { onForwardIconClick() }) {
+                Icon(
+                    imageVector = Icons.Filled.FilterList,
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+            }
         }
     }
 }
+
