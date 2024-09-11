@@ -70,7 +70,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         } catch (e: Exception) {
-                            // Обрабатываем ошибку
                             errorMessage.value = e.localizedMessage
                         }
                     }

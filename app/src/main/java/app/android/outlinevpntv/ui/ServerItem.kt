@@ -39,29 +39,44 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.getCountryCodeByIp
 import app.android.outlinevpntv.domain.OutlineVpnService
 import coil.compose.rememberAsyncImagePainter
+
+import coil.compose.AsyncImage
 
 @Composable
 fun ServerItem(
     serverName: String,
     hostIp: String,
     serverIp: String,
-    onForwardIconClick: () -> Unit
+    onForwardIconClick: () -> Unit,
+    preferencesManager: PreferencesManager
 ) {
-    var countryCode by remember { mutableStateOf<String?>(null) }
     var flagUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(hostIp) {
         if (hostIp == "127.0.0.1") {
             return@LaunchedEffect
         }
-        countryCode = getCountryCodeByIp(hostIp)
-        countryCode?.let { code -> flagUrl = "https://flagsapi.com/$code/flat/64.png"
+
+
+        val savedFlagUrl = preferencesManager.getFlagUrl(hostIp)
+        if (savedFlagUrl != null) {
+            Log.d("ServerItem", "Флаг загружен из SharedPreferences: $savedFlagUrl")
+            flagUrl = savedFlagUrl
+        } else {
+            val countryCode = getCountryCodeByIp(hostIp)
+            if (countryCode != null) {
+                val newFlagUrl = "https://flagsapi.com/$countryCode/flat/64.png"
+                Log.d("ServerItem", "Флаг загружен с API: $newFlagUrl")
+                flagUrl = newFlagUrl
+                preferencesManager.saveFlagUrl(hostIp, newFlagUrl) // Сохраняем флаг
+            }
         }
     }
-
 
     Box(
         modifier = Modifier
@@ -77,13 +92,15 @@ fun ServerItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             if (flagUrl != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(flagUrl),
+                AsyncImage(
+                    model = flagUrl,
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(id = R.drawable.logo),
+                    error = painterResource(id = R.drawable.logo)
                 )
             } else {
                 Image(

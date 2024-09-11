@@ -35,10 +35,19 @@ class PreferencesManager(context: Context) {
         return preferences.getString(KEY_SERVER_NAME, null)
     }
 
+    fun saveFlagUrl(ip: String, flagUrl: String) {
+        preferences.edit().putString("flag_$ip", flagUrl).apply()
+    }
+
+    fun getFlagUrl(ip: String): String? {
+        return preferences.getString("flag_$ip", null)
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN = "vpn_key"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
-        private const val KEY_SERVER_NAME = "server_name"  // Новый ключ для имени сервера
+        private const val KEY_SERVER_NAME = "server_name"
+        private const val KEY_FLAG_URL = "flag_url"
     }
 }
