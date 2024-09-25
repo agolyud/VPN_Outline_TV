@@ -77,14 +77,15 @@ class MainViewModel(
             VpnEvent.STARTED -> {
                 val started = System.currentTimeMillis()
                 preferencesManager.saveVpnStartTime(started)
-                checkVpnConnectionState()
-                loadLastVpnServerState()
+                _vpnServerState.value = _vpnServerState.value?.copy(startTime = started)
+                _vpnConnectionState.value = true
             }
             VpnEvent.STOPPED -> {
                 preferencesManager.clearVpnStartTime()
-                checkVpnConnectionState()
-                loadLastVpnServerState()
+                _vpnServerState.value = _vpnServerState.value?.copy(startTime = 0L)
+                _vpnConnectionState.value = false
             }
+
             VpnEvent.ERROR -> {
                 preferencesManager.clearVpnStartTime()
                 errorVpnEvent()

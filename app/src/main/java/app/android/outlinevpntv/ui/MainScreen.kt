@@ -74,7 +74,6 @@ fun MainScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Error events observer
     LaunchedEffect(Unit) {
         errorEvent.observe(lifecycleOwner) {
             isConnectionLoading = false
@@ -86,7 +85,6 @@ fun MainScreen(
         }
     }
 
-    // Connection time
     LaunchedEffect(isConnected, vpnServerState.startTime) {
         isConnectionLoading = false
         while (isConnected) {
@@ -330,5 +328,3 @@ fun DefaultPreview() {
         onSaveServer = {_,_ -> },
     )
 }
-
-
