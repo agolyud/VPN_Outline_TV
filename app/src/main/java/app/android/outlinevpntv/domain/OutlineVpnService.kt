@@ -7,9 +7,15 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.net.VpnService
 import android.os.Build
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import app.android.outlinevpntv.MainActivity
+import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
+import app.android.outlinevpntv.data.model.ShadowSocksInfo
+import app.android.outlinevpntv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,20 +28,16 @@ import shadowsocks.Shadowsocks
 class OutlineVpnService : VpnService() {
 
     companion object {
-        var HOST = "127.0.0.1"
-        var PORT = 34675
-        var PASSWORD = "password"
-        var METHOD = "Method"
-        private const val PREFIX = "\u0000\u0080\u00ff"
+        private const val CONFIG_EXTRA = "OutlineVpnService:config"
 
         private const val TAG = "OutlineVpnService"
         private const val ACTION_START = "action.start"
         private const val ACTION_STOP = "action.stop"
 
         private const val NOTIFICATION_CHANNEL_ID = "outline-vpn"
+        private const val NOTIFICATION_CHANNEL_NAME = "Outline"
         private const val NOTIFICATION_COLOR = 0x00BFA5
         private const val NOTIFICATION_SERVICE_ID = 1
-
 
         private var isRunning = false
 
@@ -43,8 +45,8 @@ class OutlineVpnService : VpnService() {
             return isRunning
         }
 
-        fun start(context: Context) {
-            context.startService(newIntent(context, ACTION_START))
+        fun start(context: Context, config: ShadowSocksInfo) {
+            context.startService(newIntent(context, ACTION_START).putExtra(CONFIG_EXTRA, config))
         }
 
         fun stop(context: Context) {
@@ -52,9 +54,7 @@ class OutlineVpnService : VpnService() {
         }
 
         private fun newIntent(context: Context, action: String): Intent {
-            return Intent(context, OutlineVpnService::class.java).apply {
-                this.action = action
-            }
+            return Intent(context, OutlineVpnService::class.java).apply { this.action = action }
         }
     }
 
@@ -62,10 +62,9 @@ class OutlineVpnService : VpnService() {
 
     private lateinit var vpnTunnel: VpnTunnel
 
-    private var notificationBuilder: Notification.Builder? = null
-
     override fun onCreate() {
         Log.i(TAG, "onCreate: ")
+        registerNotificationChannel()
         vpnTunnel = VpnTunnel(this)
     }
 
@@ -73,7 +72,7 @@ class OutlineVpnService : VpnService() {
         val action = intent?.action
         return when {
             action == ACTION_START && !isRunning -> {
-                startVpn()
+                startVpn(intent.extras?.getParcelable<ShadowSocksInfo>(CONFIG_EXTRA))
                 START_STICKY
             }
             action == ACTION_STOP -> {
@@ -84,23 +83,42 @@ class OutlineVpnService : VpnService() {
         }
     }
 
-    private fun startVpn() = scope.launch(Dispatchers.IO) {
-        val isAutoStart = false
-
-        val configCopy = Config().apply {
-            host = HOST
-            port = PORT.toLong()
-            cipherName = METHOD
-            password = PASSWORD
+    private fun startVpn(config: ShadowSocksInfo?) = scope.launch(Dispatchers.IO) {
+        if (config == null) {
+            Log.e(TAG, "startVpn: null config")
+            sendBroadcast(
+                Intent(BroadcastVpnServiceAction.ERROR)
+            )
+            return@launch
         }
 
-        Log.d(TAG, "startVpn: Config -> HOST=$HOST, PORT=$PORT, CIPHER=$METHOD, PASSWORD=$PASSWORD")
+        val ssConfig = Config().apply {
+            host = config.host
+            port = config.port.toLong()
+            cipherName = config.method
+            password = config.password
+            prefix = config.prefix?.toByteArray()
+        }
+
+        val started = startVpnInternal(ssConfig)
+        sendBroadcast(
+            Intent(
+                if (started) BroadcastVpnServiceAction.STARTED
+                else BroadcastVpnServiceAction.ERROR
+            )
+        )
+    }
+
+    private fun startVpnInternal(config: Config): Boolean {
+        val isAutoStart = false
+
+        Log.d(TAG, "startVpn: Config -> $config")
 
         val client = try {
-            Client(configCopy)
+            Client(config)
         } catch (e: Exception) {
             Log.i(TAG, "startVpn: Invalid configuration", e)
-            return@launch
+            return false
         }
 
         Log.d(TAG, "startVpn: Shadowsocks Client created")
@@ -110,11 +128,11 @@ class OutlineVpnService : VpnService() {
                 val errorCode = checkServerConnectivity(client)
                 if (errorCode != ErrorCode.NO_ERROR && errorCode != ErrorCode.UDP_RELAY_NOT_ENABLED) {
                     Log.i(TAG, "startVpn: Server connectivity check failed with error $errorCode")
-                    return@launch
+                    return false
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "startVpn: SHADOWSOCKS_START_FAILURE", e)
-                return@launch
+                return false
             }
         }
 
@@ -122,7 +140,7 @@ class OutlineVpnService : VpnService() {
 
         if (!vpnTunnel.establishVpn()) {
             Log.i(TAG, "startVpn: Failed to establish the VPN")
-            return@launch
+            return false
         }
 
         val remoteUdpForwardingEnabled = false
@@ -135,20 +153,23 @@ class OutlineVpnService : VpnService() {
             Log.e(TAG, "startVpn: Failed to connect the tunnel", e)
             isRunning = false
         }
-    }
 
+        return isRunning
+    }
 
     private fun stopVpn() {
         stopVpnTunnel()
         stopForeground()
         stopSelf()
         isRunning = false
+
+        sendBroadcast(Intent(BroadcastVpnServiceAction.STOPPED))
     }
 
     private fun checkServerConnectivity(client: Client): ErrorCode {
         return try {
             val errorCode = Shadowsocks.checkConnectivity(client)
-            val result: ErrorCode = ErrorCode.values()[errorCode.toInt()]
+            val result: ErrorCode = ErrorCode.entries[errorCode.toInt()]
             Log.i(TAG, "checkServerConnectivity: Go connectivity check result: ${result.name}")
             result
         } catch (e: Exception) {
@@ -159,15 +180,16 @@ class OutlineVpnService : VpnService() {
 
     private fun startForegroundWithNotification() {
         try {
-            if (notificationBuilder == null) {
-
-                notificationBuilder = getNotificationBuilder()
+            val notification: Notification = createNotification()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_SERVICE_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
+                )
+            } else {
+                startForeground(NOTIFICATION_SERVICE_ID, notification)
             }
-            notificationBuilder!!.setContentText("outline_vpn")
-            startForeground(
-                NOTIFICATION_SERVICE_ID,
-                notificationBuilder!!.build()
-            )
         } catch (e: java.lang.Exception) {
             Log.e(
                 TAG,
@@ -177,35 +199,46 @@ class OutlineVpnService : VpnService() {
         }
     }
 
-    @Throws(Exception::class)
-    private fun getNotificationBuilder(): Notification.Builder? {
-        val launchIntent = Intent(this, getPackageMainActivityClass())
-        val mainActivityIntent =
-            PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-        val builder: Notification.Builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID,
-                "Outline",
-                NotificationManager.IMPORTANCE_LOW
-            )
-            val notificationManager = getSystemService(
-                NotificationManager::class.java
-            )
-            notificationManager.createNotificationChannel(channel)
-            Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
-        } else {
-            Notification.Builder(this)
+    private fun registerNotificationChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
         }
-
-        return builder.setContentTitle("outline_vpn")
-            .setColor(NOTIFICATION_COLOR)
-            .setVisibility(Notification.VISIBILITY_SECRET)
-            .setContentIntent(mainActivityIntent)
-            .setShowWhen(true)
-            .setUsesChronometer(true)
+        val channel = NotificationChannel(
+            NOTIFICATION_CHANNEL_ID,
+            NOTIFICATION_CHANNEL_NAME,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val notificationManager = getSystemService(
+            NotificationManager::class.java
+        )
+        notificationManager.createNotificationChannel(channel)
     }
 
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.logo)
+            .setSilent(true)
+            .setColor(NOTIFICATION_COLOR)
+            .setContentTitle(getString(R.string.vpn_name))
+            .setContentText(getString(R.string.vpn_connected))
+            .addAction(0, getString(R.string.stop_vpn),
+                PendingIntent.getService(
+                    this,
+                    0,
+                    Intent(this, OutlineVpnService::class.java).setAction(ACTION_STOP),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+            )
+            .setContentIntent(
+                PendingIntent.getActivity(
+                    this,
+                    0,
+                    Intent(this, MainActivity::class.java),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
+            .build()
+    }
 
     // Plugin error codes. Keep in sync with www/model/errors.ts.
     enum class ErrorCode(val value: Int) {
@@ -224,23 +257,13 @@ class OutlineVpnService : VpnService() {
         SYSTEM_MISCONFIGURED(12)
     }
 
-    @Throws(Exception::class)
-    private fun getPackageMainActivityClass(): Class<*>? {
-        return try {
-            Class.forName("$packageName.MainActivity")
-        } catch (e: Exception) {
-            throw e
-        }
-    }
-
     private fun stopVpnTunnel() {
         vpnTunnel.disconnectTunnel()
         vpnTunnel.tearDownVpn()
     }
 
     private fun stopForeground() {
-        stopForeground(true)
-        notificationBuilder = null
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     override fun onRevoke() {

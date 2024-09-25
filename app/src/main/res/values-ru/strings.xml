@@ -165,4 +165,10 @@
     <string name="cancel">Отменить</string>
     <string name="paste_from_clipboard">Вставить из буфера обмена</string>
     <string name="clipboard_empty">Буфер обмена пустой</string>
+    <string name="vpn_connected">VPN Подключен</string>
+    <string name="stop_vpn">Остановить</string>
+    <string name="default_server_name">Сервер #1</string>
+    <string name="vpn_start_failed">Не удалось запустить VPN</string>
+    <string name="wrong_outline_key_format">Неправильный формат ключа Outline</string>
+    <string name="disconnect_before_settings">Сначала отключитесь от VPN</string>
 </resources>
