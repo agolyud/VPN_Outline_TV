@@ -11,21 +11,30 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.data.remote.RemoteJSONFetch
 import app.android.outlinevpntv.domain.OutlineVpnManager
+import app.android.outlinevpntv.domain.checkForUpdate
 import app.android.outlinevpntv.ui.MainScreen
+import app.android.outlinevpntv.ui.UpdateDialog
 import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
 import app.android.outlinevpntv.utils.activityresult.base.launch
+import app.android.outlinevpntv.utils.versionName
 import app.android.outlinevpntv.viewmodel.MainViewModel
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
 
@@ -39,7 +48,7 @@ class MainActivity : ComponentActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            when(intent.action) {
+            when (intent.action) {
                 BroadcastVpnServiceAction.STARTED -> viewModel.vpnEvent(VpnEvent.STARTED)
                 BroadcastVpnServiceAction.STOPPED -> viewModel.vpnEvent(VpnEvent.STOPPED)
                 BroadcastVpnServiceAction.ERROR -> viewModel.vpnEvent(VpnEvent.ERROR)
@@ -59,6 +68,7 @@ class MainActivity : ComponentActivity() {
             addAction(BroadcastVpnServiceAction.STOPPED)
             addAction(BroadcastVpnServiceAction.ERROR)
         }
+
         @SuppressLint("UnspecifiedRegisterReceiverFlag")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerReceiver(receiver, intentFilter, RECEIVER_EXPORTED)
@@ -70,6 +80,18 @@ class MainActivity : ComponentActivity() {
             val connectionState by viewModel.vpnConnectionState.observeAsState(false)
             val vpnServerState by viewModel.vpnServerState.observeAsState(VpnServerStateUi.DEFAULT)
             val errorMessage = remember { mutableStateOf<String?>(null) }
+            var showUpdateDialog by remember { mutableStateOf(false) }
+
+            if (showUpdateDialog) {
+                UpdateDialog(
+                    onUpdate = {
+                        showUpdateDialog = false
+                    },
+                    onDismiss = {
+                        showUpdateDialog = false
+                    }
+                )
+            }
 
             MainScreen(
                 isConnected = connectionState,
@@ -83,7 +105,14 @@ class MainActivity : ComponentActivity() {
             errorMessage.value?.let {
                 Toast.makeText(this, it, Toast.LENGTH_LONG).show()
             }
+
+            LaunchedEffect(Unit) {
+                checkForAppUpdates {
+                    showUpdateDialog = true
+                }
+            }
         }
+
     }
 
     override fun onResume() {
@@ -107,6 +136,19 @@ class MainActivity : ComponentActivity() {
                 }
             }
             failed = { viewModel.vpnEvent(VpnEvent.ERROR) }
+        }
+    }
+
+    private fun checkForAppUpdates(onUpdateAvailable: () -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val currentVersion = versionName(this@MainActivity)
+            val isUpdateAvailable = withContext(Dispatchers.IO) {
+                checkForUpdate(currentVersion)
+            }
+
+            if (isUpdateAvailable) {
+                onUpdateAvailable()
+            }
         }
     }
 }
