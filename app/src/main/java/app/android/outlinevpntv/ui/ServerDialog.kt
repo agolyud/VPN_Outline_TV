@@ -33,6 +33,7 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -91,7 +92,8 @@ fun ServerDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(id = R.string.edit_server_info),
-                    fontSize = 17.sp
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
