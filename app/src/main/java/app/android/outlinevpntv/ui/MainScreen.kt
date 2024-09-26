@@ -86,8 +86,6 @@ fun MainScreen(
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
-
-    // Error events observer
     LaunchedEffect(Unit) {
         errorEvent.observe(lifecycleOwner) {
             isConnectionLoading = false
@@ -99,7 +97,6 @@ fun MainScreen(
         }
     }
 
-    // Connection time
     LaunchedEffect(isConnected, vpnServerState.startTime) {
         isConnectionLoading = false
         while (isConnected) {
@@ -353,5 +350,3 @@ fun DefaultPreview() {
         onSaveServer = {_,_ -> },
     )
 }
-
-
