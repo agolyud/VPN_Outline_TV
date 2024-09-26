@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.viewmodel.ServerDialogViewModel
 
 
@@ -50,7 +51,9 @@ fun ServerDialog(
     onDismiss: () -> Unit,
     onSave: (String, String) -> Unit
 ) {
-    val viewModel: ServerDialogViewModel = viewModel(factory = ServerDialogViewModel.Factory)
+    val viewModel: ServerDialogViewModel = viewModel(
+        factory = ServerDialogViewModel.Factory(ParseUrlOutline.Validate.Base())
+    )
 
     var serverName by remember { mutableStateOf(currentName) }
     var serverKey by remember { mutableStateOf(currentKey) }

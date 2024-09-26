@@ -41,6 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.android.outlinevpntv.viewmodel.ServerItemViewModel
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
+import app.android.outlinevpntv.data.remote.IpCountryCodeProvider
+import app.android.outlinevpntv.data.remote.RemoteJSONFetch
+import app.android.outlinevpntv.data.remote.ServerIconProvider
 
 import coil.compose.AsyncImage
 
@@ -50,11 +54,20 @@ fun ServerItem(
     serverHost: String,
     onForwardIconClick: () -> Unit,
 ) {
-    val viewModel: ServerItemViewModel = viewModel(factory = ServerItemViewModel.Factory)
+    val context = LocalContext.current
+
+    val viewModel: ServerItemViewModel = viewModel(
+        factory = ServerItemViewModel.Factory(
+            serverIconProvider = ServerIconProvider.FlagsApiDotCom(
+                ipCountryCodeProvider = IpCountryCodeProvider.IpApiDotCo(
+                    fetch = RemoteJSONFetch.HttpURLConnectionJSONFetch()
+                ),
+                preferencesManager = PreferencesManager(context = context),
+            )
+        )
+    )
 
     val serverIconState by viewModel.serverIconState.observeAsState()
-
-    val context = LocalContext.current
 
     LaunchedEffect(serverHost) { viewModel.serverHost(serverHost) }
 

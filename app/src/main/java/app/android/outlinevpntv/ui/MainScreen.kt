@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -313,8 +314,8 @@ fun MainScreen(
 }
 
 
-
-@Preview(showBackground = true)
+@Preview(name = "Default", showBackground = true)
+@Preview(name = "TV", device = Devices.TV_1080p, showBackground = true)
 @Composable
 fun DefaultPreview() {
     MainScreen(

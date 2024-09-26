@@ -2,8 +2,6 @@ package app.android.outlinevpntv.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 
 class ServerDialogViewModel(
@@ -14,11 +12,12 @@ class ServerDialogViewModel(
         return validateOutlineUrl.validate(ssUrl)
     }
 
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                ServerDialogViewModel(validateOutlineUrl = ParseUrlOutline.Validate.Base())
-            }
+    class Factory(
+        private val validateOutlineUrl: ParseUrlOutline.Validate
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return ServerDialogViewModel(validateOutlineUrl) as T
         }
     }
 }
