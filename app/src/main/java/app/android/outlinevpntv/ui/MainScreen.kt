@@ -144,7 +144,7 @@ fun MainScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = context.getString(R.string.version) + " " + versionName(context),
+                            text = context.getString(R.string.version, versionName(context)),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray
                         )
