@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.domain.OutlineVpnManager
+import app.android.outlinevpntv.domain.update.UpdateManager
 import app.android.outlinevpntv.viewmodel.state.SingleLiveEvent
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
@@ -17,6 +18,7 @@ class MainViewModel(
     private val preferencesManager: PreferencesManager,
     private val vpnManager: OutlineVpnManager,
     private val parseUrlOutline: ParseUrlOutline,
+    private val updateManager: UpdateManager,
 ) : ViewModel() {
 
     private val _vpnServerState = MutableLiveData<VpnServerStateUi>()
@@ -27,6 +29,24 @@ class MainViewModel(
 
     private val _errorEvent = SingleLiveEvent<Unit>()
     val errorEvent: LiveData<Unit> get() = _errorEvent
+
+    suspend fun checkForAppUpdates(currentVersion: String, onUpdateAvailable: (String) -> Unit) {
+        val updateStatus = updateManager.checkForAppUpdates(currentVersion)
+        if (updateStatus is UpdateManager.UpdateStatus.Available) {
+            onUpdateAvailable(updateStatus.latestVersion)
+        }
+    }
+
+    fun updateAppToLatest(
+        onProgress: (Int) -> Unit,
+        onFinished: () -> Unit,
+        onError: (Throwable?) -> Unit
+    ) {
+        viewModelScope.launch {
+            updateManager.downloadAndInstallLatestApk(onProgress, onError)
+            onFinished()
+        }
+    }
 
     fun startVpn(configString: String) {
         viewModelScope.launch {
@@ -72,13 +92,14 @@ class MainViewModel(
     }
 
     fun vpnEvent(event: VpnEvent) {
-        when(event) {
+        when (event) {
             VpnEvent.STARTED -> {
                 val started = System.currentTimeMillis()
                 preferencesManager.saveVpnStartTime(started)
                 _vpnServerState.value = _vpnServerState.value?.copy(startTime = started)
                 _vpnConnectionState.value = true
             }
+
             VpnEvent.STOPPED -> {
                 preferencesManager.clearVpnStartTime()
                 _vpnServerState.value = _vpnServerState.value?.copy(startTime = 0L)
@@ -101,10 +122,16 @@ class MainViewModel(
         private val preferencesManager: PreferencesManager,
         private val vpnManager: OutlineVpnManager,
         private val parseUrlOutline: ParseUrlOutline,
+        private val updateManager: UpdateManager,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MainViewModel(preferencesManager, vpnManager, parseUrlOutline) as T
+            return MainViewModel(
+                preferencesManager,
+                vpnManager,
+                parseUrlOutline,
+                updateManager
+            ) as T
         }
     }
 }

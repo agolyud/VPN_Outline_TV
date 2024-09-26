@@ -14,19 +14,18 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.data.remote.RemoteJSONFetch
-import app.android.outlinevpntv.domain.GitHubUpdateChecker
 import app.android.outlinevpntv.domain.OutlineVpnManager
-import app.android.outlinevpntv.domain.checkForUpdate
-import app.android.outlinevpntv.domain.downloadAndInstallApk
+import app.android.outlinevpntv.domain.update.UpdateManager
 import app.android.outlinevpntv.ui.MainScreen
 import app.android.outlinevpntv.ui.UpdateDialog
 import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
@@ -35,21 +34,15 @@ import app.android.outlinevpntv.utils.versionName
 import app.android.outlinevpntv.viewmodel.MainViewModel
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
-
-    var downloadProgress by mutableStateOf(0)
-    var latestVersion by mutableStateOf<String?>(null)
 
     private val viewModel: MainViewModel by viewModels {
         MainViewModel.Factory(
             preferencesManager = PreferencesManager(context = applicationContext),
             vpnManager = OutlineVpnManager(context = applicationContext),
             parseUrlOutline = ParseUrlOutline.Base(RemoteJSONFetch.HttpURLConnectionJSONFetch()),
+            updateManager = UpdateManager.Github(context = applicationContext),
         )
     }
 
@@ -87,30 +80,42 @@ class MainActivity : ComponentActivity() {
             val connectionState by viewModel.vpnConnectionState.observeAsState(false)
             val vpnServerState by viewModel.vpnServerState.observeAsState(VpnServerStateUi.DEFAULT)
             val errorMessage = remember { mutableStateOf<String?>(null) }
-            var showUpdateDialog by remember { mutableStateOf(false) }
-            val context = LocalContext.current
-            val coroutineScope = rememberCoroutineScope()
-            val currentVersion = versionName(context)
 
-            if (showUpdateDialog && latestVersion != null) {
+            val context = LocalContext.current
+
+            var showUpdateDialog by remember { mutableStateOf(false) }
+            var updateDialogCancelled by rememberSaveable { mutableStateOf(false) }
+            val currentVersion = remember { versionName(context) }
+            var downloadProgress by remember { mutableIntStateOf(0) }
+            var isDownloadingActive by remember { mutableStateOf(false) }
+            var latestVersion by remember { mutableStateOf("") }
+
+            if (showUpdateDialog) {
                 UpdateDialog(
                     onUpdate = {
-                        coroutineScope.launch {
-                            downloadAndInstallApk(context) { progress ->
-                                downloadProgress = progress
+                        isDownloadingActive = true
+                        viewModel.updateAppToLatest(
+                            onProgress = { downloadProgress = it },
+                            onFinished = { showUpdateDialog = false },
+                            onError = { _ ->
+                                Toast.makeText(
+                                    context,
+                                    R.string.update_error,
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
-                            showUpdateDialog = false
-                        }
+                        )
                     },
                     onDismiss = {
                         showUpdateDialog = false
+                        updateDialogCancelled = true
                     },
+                    isDownloading = isDownloadingActive,
                     downloadProgress = downloadProgress,
                     currentVersion = currentVersion,
                     latestVersion = latestVersion
                 )
             }
-
 
             MainScreen(
                 isConnected = connectionState,
@@ -122,12 +127,15 @@ class MainActivity : ComponentActivity() {
             )
 
             errorMessage.value?.let {
-                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }
 
-            LaunchedEffect(Unit) {
-                checkForAppUpdates {
-                    showUpdateDialog = true
+            if (!updateDialogCancelled) {
+                LaunchedEffect(Unit) {
+                    viewModel.checkForAppUpdates(currentVersion) { newVersion ->
+                        latestVersion = newVersion
+                        showUpdateDialog = true
+                    }
                 }
             }
         }
@@ -155,20 +163,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
             failed = { viewModel.vpnEvent(VpnEvent.ERROR) }
-        }
-    }
-
-    private fun checkForAppUpdates(onUpdateAvailable: () -> Unit) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val currentVersion = versionName(this@MainActivity)
-            val isUpdateAvailable = withContext(Dispatchers.IO) {
-                checkForUpdate(currentVersion)
-            }
-
-            if (isUpdateAvailable) {
-                latestVersion = GitHubUpdateChecker.getLatestReleaseVersion()
-                onUpdateAvailable()
-            }
         }
     }
 }

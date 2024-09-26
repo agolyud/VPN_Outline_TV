@@ -176,10 +176,12 @@
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
     <string name="by_author">by AlexGolyd and khoben</string>
     <string name="app_update_available">Update Outline?</string>
-    <string name="loading">Loading:</string>
+    <string name="loading_progress">Loading: %1$s%%</string>
     <string name="update">Update</string>
-    <string name="your_version">Your version</string>
-    <string name="upgrade_to">Upgrade to</string>
+    <string name="your_version">Your version: %1$s</string>
+    <string name="upgrade_to">Upgrade to: %1$s</string>
     <string name="failed_to_get_latest_version">Failed to get latest version</string>
+    <string name="update_error">Update error</string>
+    <string name="app_update_downloading">Downloading update…</string>
 
 </resources>
