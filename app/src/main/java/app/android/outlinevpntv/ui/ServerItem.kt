@@ -2,8 +2,11 @@ package app.android.outlinevpntv.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -68,6 +72,8 @@ fun ServerItem(
     )
 
     val serverIconState by viewModel.serverIconState.observeAsState()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
 
     LaunchedEffect(serverHost) { viewModel.serverHost(serverHost) }
 
@@ -75,10 +81,20 @@ fun ServerItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .border(
+                width = 3.dp,
+                color = if (isFocused)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                else
+                    Color.Transparent,
+                shape = MaterialTheme.shapes.large
+            )
+            .padding(4.dp)
             .clip(MaterialTheme.shapes.medium)
             .background(Color(0xFFEEEEEE))
+            .focusable(interactionSource = interactionSource)
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = ripple(true),
                 onClick = onForwardIconClick
             )

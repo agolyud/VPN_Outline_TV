@@ -15,8 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,6 +77,9 @@ fun MainScreen(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
 
     // Error events observer
     LaunchedEffect(Unit) {
@@ -225,6 +231,15 @@ fun MainScreen(
                 Box(
                     modifier = Modifier
                         .size(120.dp)
+                        .border(
+                            width = 3.dp,
+                            color = if (isFocused)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                            else
+                                Color.Transparent,
+                            shape = RoundedCornerShape(34.dp)
+                        )
+                        .padding(4.dp)
                         .clip(RoundedCornerShape(30.dp))
                         .background(
                             brush = Brush.verticalGradient(
@@ -241,8 +256,9 @@ fun MainScreen(
                                 }
                             )
                         )
+                        .focusable(interactionSource = interactionSource)
                         .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
+                            interactionSource = interactionSource,
                             indication = ripple(true)
                         ) {
                             if (!isEditing) {
