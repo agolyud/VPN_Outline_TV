@@ -3,13 +3,10 @@ package app.android.outlinevpntv.domain
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import app.android.outlinevpntv.domain.GitHubUpdateChecker.REPO_NAME
 import app.android.outlinevpntv.domain.GitHubUpdateChecker.REPO_OWNER
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -59,13 +56,13 @@ suspend fun checkForUpdate(currentVersion: String): Boolean {
 }
 
 
-suspend fun downloadAndInstallApk(context: Context) {
+suspend fun downloadAndInstallApk(context: Context, onProgress: (Int) -> Unit) {
     val url = "https://github.com/$REPO_OWNER/$REPO_NAME/releases/latest/download/OutlineVPNtv.apk"
     val apkFile = File(context.cacheDir, "OutlineVPNtv.apk")
 
     try {
         if (!apkFile.exists()) {
-            downloadApk(url, apkFile)
+            downloadApk(url, apkFile, onProgress)
         }
         withContext(Dispatchers.Main) {
             installApk(context, apkFile)
@@ -78,16 +75,25 @@ suspend fun downloadAndInstallApk(context: Context) {
     }
 }
 
-private suspend fun downloadApk(url: String, outputFile: File) {
+private suspend fun downloadApk(url: String, outputFile: File, onProgress: (Int) -> Unit) {
     withContext(Dispatchers.IO) {
         val request = okhttp3.Request.Builder().url(url).build()
         val response = OkHttpClient().newCall(request).execute()
         val inputStream = response.body?.byteStream()
-        val outputStream = outputFile.outputStream()
+        val totalBytes = response.body?.contentLength() ?: -1
+        var downloadedBytes = 0L
 
         inputStream?.use { input ->
-            outputStream.use { output ->
-                input.copyTo(output)
+            outputFile.outputStream().use { output ->
+                val buffer = ByteArray(8 * 1024)
+                var bytesRead: Int
+                while (input.read(buffer).also { bytesRead = it } != -1) {
+                    output.write(buffer, 0, bytesRead)
+                    downloadedBytes += bytesRead
+                    // Рассчитываем процент прогресса
+                    val progress = ((downloadedBytes * 100) / totalBytes).toInt()
+                    onProgress(progress)
+                }
             }
         }
     }

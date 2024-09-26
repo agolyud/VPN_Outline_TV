@@ -67,9 +67,7 @@ fun ServerDialog(
     }
 
     fun setServerKey(key: String) {
-        // Validate key
         validateKey(key)
-        // Try to read server name from connection URL
         serverName = key.substringAfterLast("#", serverName)
         serverKey = key
     }

@@ -175,4 +175,10 @@
     <string name="disconnect_before_settings">Сначала отключитесь от VPN</string>
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
     <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="app_update_available">Обновить Outline?</string>
+    <string name="loading">Загрузка:</string>
+    <string name="update">Обновить</string>
+    <string name="your_version">Ваша версия</string>
+    <string name="upgrade_to">Обновить до</string>
+    <string name="failed_to_get_latest_version">Не удалось получить последнюю версию.</string>
 </resources>

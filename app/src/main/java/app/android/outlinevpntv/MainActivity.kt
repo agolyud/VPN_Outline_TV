@@ -23,6 +23,7 @@ import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.data.remote.RemoteJSONFetch
+import app.android.outlinevpntv.domain.GitHubUpdateChecker
 import app.android.outlinevpntv.domain.OutlineVpnManager
 import app.android.outlinevpntv.domain.checkForUpdate
 import app.android.outlinevpntv.domain.downloadAndInstallApk
@@ -40,6 +41,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
+
+    var downloadProgress by mutableStateOf(0)
+    var latestVersion by mutableStateOf<String?>(null)
 
     private val viewModel: MainViewModel by viewModels {
         MainViewModel.Factory(
@@ -86,20 +90,27 @@ class MainActivity : ComponentActivity() {
             var showUpdateDialog by remember { mutableStateOf(false) }
             val context = LocalContext.current
             val coroutineScope = rememberCoroutineScope()
+            val currentVersion = versionName(context)
 
-            if (showUpdateDialog) {
+            if (showUpdateDialog && latestVersion != null) {
                 UpdateDialog(
                     onUpdate = {
-                        showUpdateDialog = false
                         coroutineScope.launch {
-                            downloadAndInstallApk(context)
+                            downloadAndInstallApk(context) { progress ->
+                                downloadProgress = progress
+                            }
+                            showUpdateDialog = false
                         }
                     },
                     onDismiss = {
                         showUpdateDialog = false
-                    }
+                    },
+                    downloadProgress = downloadProgress,
+                    currentVersion = currentVersion,
+                    latestVersion = latestVersion
                 )
             }
+
 
             MainScreen(
                 isConnected = connectionState,
@@ -155,6 +166,7 @@ class MainActivity : ComponentActivity() {
             }
 
             if (isUpdateAvailable) {
+                latestVersion = GitHubUpdateChecker.getLatestReleaseVersion()
                 onUpdateAvailable()
             }
         }

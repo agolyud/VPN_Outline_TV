@@ -175,5 +175,11 @@
     <string name="wrong_outline_key_format">Wrong Outline key format</string>
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
     <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="app_update_available">Update Outline?</string>
+    <string name="loading">Loading:</string>
+    <string name="update">Update</string>
+    <string name="your_version">Your version</string>
+    <string name="upgrade_to">Upgrade to</string>
+    <string name="failed_to_get_latest_version">Failed to get latest version</string>
 
 </resources>
