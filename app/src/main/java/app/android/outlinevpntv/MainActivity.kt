@@ -16,13 +16,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.data.remote.RemoteJSONFetch
 import app.android.outlinevpntv.domain.OutlineVpnManager
 import app.android.outlinevpntv.domain.checkForUpdate
+import app.android.outlinevpntv.domain.downloadAndInstallApk
 import app.android.outlinevpntv.ui.MainScreen
 import app.android.outlinevpntv.ui.UpdateDialog
 import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
@@ -81,11 +84,16 @@ class MainActivity : ComponentActivity() {
             val vpnServerState by viewModel.vpnServerState.observeAsState(VpnServerStateUi.DEFAULT)
             val errorMessage = remember { mutableStateOf<String?>(null) }
             var showUpdateDialog by remember { mutableStateOf(false) }
+            val context = LocalContext.current
+            val coroutineScope = rememberCoroutineScope()
 
             if (showUpdateDialog) {
                 UpdateDialog(
                     onUpdate = {
                         showUpdateDialog = false
+                        coroutineScope.launch {
+                            downloadAndInstallApk(context)
+                        }
                     },
                     onDismiss = {
                         showUpdateDialog = false
