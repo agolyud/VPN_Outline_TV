@@ -11,10 +11,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
-import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.data.remote.RemoteJSONFetch
@@ -24,6 +25,7 @@ import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
 import app.android.outlinevpntv.utils.activityresult.base.launch
 import app.android.outlinevpntv.viewmodel.MainViewModel
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
+import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 
 class MainActivity : ComponentActivity() {
 

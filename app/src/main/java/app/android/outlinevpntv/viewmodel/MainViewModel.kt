@@ -1,17 +1,16 @@
 package app.android.outlinevpntv.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
-import app.android.outlinevpntv.viewmodel.state.SingleLiveEvent
 import app.android.outlinevpntv.domain.OutlineVpnManager
+import app.android.outlinevpntv.viewmodel.state.SingleLiveEvent
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
+import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 import kotlinx.coroutines.launch
 
 class MainViewModel(

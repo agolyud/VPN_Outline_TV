@@ -13,9 +13,9 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import app.android.outlinevpntv.MainActivity
+import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.model.ShadowSocksInfo
-import app.android.outlinevpntv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
