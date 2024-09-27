@@ -1,9 +1,12 @@
 package app.android.outlinevpntv.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,90 +18,106 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.FixedScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
-import app.android.outlinevpntv.data.remote.getCountryCodeByIp
-
+import app.android.outlinevpntv.data.remote.IpCountryCodeProvider
+import app.android.outlinevpntv.data.remote.RemoteJSONFetch
+import app.android.outlinevpntv.data.remote.ServerIconProvider
+import app.android.outlinevpntv.viewmodel.ServerItemViewModel
 import coil.compose.AsyncImage
 
 @Composable
 fun ServerItem(
     serverName: String,
-    hostIp: String,
-    serverIp: String,
+    serverHost: String,
     onForwardIconClick: () -> Unit,
-    preferencesManager: PreferencesManager
 ) {
-    var flagUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
-    LaunchedEffect(hostIp) {
-        if (hostIp == "127.0.0.1") {
-            return@LaunchedEffect
-        }
+    val viewModel: ServerItemViewModel = viewModel(
+        factory = ServerItemViewModel.Factory(
+            serverIconProvider = ServerIconProvider.FlagsApiDotCom(
+                ipCountryCodeProvider = IpCountryCodeProvider.IpApiDotCo(
+                    fetch = RemoteJSONFetch.HttpURLConnectionJSONFetch()
+                ),
+                preferencesManager = PreferencesManager(context = context),
+            )
+        )
+    )
 
+    val serverIconState by viewModel.serverIconState.observeAsState()
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
 
-        val savedFlagUrl = preferencesManager.getFlagUrl(hostIp)
-        if (savedFlagUrl != null) {
-            Log.d("ServerItem", "Флаг загружен из SharedPreferences: $savedFlagUrl")
-            flagUrl = savedFlagUrl
-        } else {
-            val countryCode = getCountryCodeByIp(hostIp)
-            val newFlagUrl = "https://flagsapi.com/$countryCode/flat/64.png"
-            Log.d("ServerItem", "Флаг загружен с API: $newFlagUrl")
-            flagUrl = newFlagUrl
-            preferencesManager.saveFlagUrl(hostIp, newFlagUrl) // Сохраняем флаг
-        }
-    }
+    LaunchedEffect(serverHost) { viewModel.serverHost(serverHost) }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
+            .border(
+                width = 3.dp,
+                color = if (isFocused)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                else
+                    Color.Transparent,
+                shape = MaterialTheme.shapes.large
+            )
+            .padding(4.dp)
             .clip(MaterialTheme.shapes.medium)
             .background(Color(0xFFEEEEEE))
-            .padding(2.dp)
-            .clickable(onClick = onForwardIconClick)
+            .focusable(interactionSource = interactionSource)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(true),
+                onClick = onForwardIconClick
+            )
+            .padding(4.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            if (flagUrl != null) {
+            Spacer(modifier = Modifier.width(8.dp))
+
+            if (serverIconState != null) {
                 AsyncImage(
-                    model = flagUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
+                    model = serverIconState,
+                    contentDescription = "Server icon",
+                    modifier = Modifier.size(36.dp).clip(CircleShape),
+                    contentScale = FixedScale(3f),
                     placeholder = painterResource(id = R.drawable.flag),
                     error = painterResource(id = R.drawable.flag)
                 )
             } else {
                 Image(
                     painter = painterResource(id = R.drawable.flag),
-                    contentDescription = "Placeholder",
+                    contentDescription = "Server icon placeholder",
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(36.dp)
                         .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
@@ -110,13 +129,13 @@ fun ServerItem(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = serverName,
+                    text = serverName.ifEmpty { context.getString(R.string.default_server_name) },
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = serverIp,
+                    text = serverHost.ifEmpty { context.getString(R.string.default_host_name) },
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray,
                     maxLines = 1,
@@ -128,11 +147,21 @@ fun ServerItem(
 
             IconButton(onClick = { onForwardIconClick() }) {
                 Icon(
-                    imageVector = Icons.Filled.FilterList,
+                    imageVector = Icons.Filled.Settings,
                     contentDescription = null,
                     tint = Color.Black
                 )
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun ServerItemPreview() {
+    ServerItem(
+        serverName = "Server",
+        serverHost = "0.0.0.0",
+        onForwardIconClick = {}
+    )
 }

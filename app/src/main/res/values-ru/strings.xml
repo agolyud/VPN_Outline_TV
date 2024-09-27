@@ -156,7 +156,7 @@
     <string name="on">Подключиться</string>
     <string name="elapsed_time">Время подключения</string>
     <string name="invalid_decoded_info_format">Недействительный формат переключателя</string>
-    <string name="version">Версия</string>
+    <string name="version">Версия %1$s</string>
     <string name="edit_server_info">Информация о сервере</string>
     <string name="server_name">Имя Сервера</string>
     <string name="outline_key">Outline Ключ</string>
@@ -165,4 +165,22 @@
     <string name="cancel">Отменить</string>
     <string name="paste_from_clipboard">Вставить из буфера обмена</string>
     <string name="clipboard_empty">Буфер обмена пустой</string>
+    <string name="vpn_name">Outline VPN</string>
+    <string name="vpn_connected">VPN Подключен</string>
+    <string name="stop_vpn">Остановить</string>
+    <string name="default_server_name">Сервер #1</string>
+    <string name="default_host_name">127.0.0.1</string>
+    <string name="vpn_start_failed">Не удалось запустить VPN</string>
+    <string name="wrong_outline_key_format">Неправильный формат ключа Outline</string>
+    <string name="disconnect_before_settings">Сначала отключитесь от VPN</string>
+    <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
+    <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="app_update_available">Обновить Outline?</string>
+    <string name="loading_progress">Загрузка: %1$s%%</string>
+    <string name="update">Обновить</string>
+    <string name="your_version">Ваша версия: %1$s</string>
+    <string name="upgrade_to">Обновить до: %1$s</string>
+    <string name="failed_to_get_latest_version">Не удалось получить последнюю версию.</string>
+    <string name="update_error">Ошибка при обновлении</string>
+    <string name="app_update_downloading">Загрузка обновления…</string>
 </resources>

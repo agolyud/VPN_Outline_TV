@@ -156,7 +156,7 @@
     <string name="on">ON</string>
     <string name="elapsed_time">Connection time</string>
     <string name="invalid_decoded_info_format">Invalid switch format</string>
-    <string name="version">Version</string>
+    <string name="version">Version %1$s</string>
     <string name="edit_server_info">Server Info</string>
     <string name="server_name">Server Name</string>
     <string name="outline_key">Outline Key</string>
@@ -164,5 +164,24 @@
     <string name="cancel">Cancel</string>
     <string name="clear">Clear</string>
     <string name="paste_from_clipboard">Paste from clipboard</string>
-    <string name="clipboard_empty">clipboard_empty</string>
+    <string name="clipboard_empty">Clipboard is empty</string>
+    <string name="vpn_name">Outline VPN</string>
+    <string name="vpn_connected">VPN Connected</string>
+    <string name="stop_vpn">Stop</string>
+    <string name="default_server_name">Server #1</string>
+    <string name="default_host_name">127.0.0.1</string>
+    <string name="vpn_start_failed">VPN Starting failed</string>
+    <string name="disconnect_before_settings">Disconnect from the VPN first</string>
+    <string name="wrong_outline_key_format">Wrong Outline key format</string>
+    <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
+    <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="app_update_available">Update Outline?</string>
+    <string name="loading_progress">Loading: %1$s%%</string>
+    <string name="update">Update</string>
+    <string name="your_version">Your version: %1$s</string>
+    <string name="upgrade_to">Upgrade to: %1$s</string>
+    <string name="failed_to_get_latest_version">Failed to get latest version</string>
+    <string name="update_error">Update error</string>
+    <string name="app_update_downloading">Downloading update…</string>
+
 </resources>
