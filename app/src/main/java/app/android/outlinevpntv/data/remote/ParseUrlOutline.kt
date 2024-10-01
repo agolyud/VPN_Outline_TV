@@ -80,7 +80,7 @@ interface ParseUrlOutline {
 
             val queryParams = groups[4].split("&").associate { q ->
                 q.split("=").let {
-                    it[0] to it.getOrElse(1) { "" }
+                    it[0] to Uri.decode(it.getOrElse(1) { "" })
                 }
             }
             val serverName = groups[5]
