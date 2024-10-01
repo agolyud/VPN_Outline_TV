@@ -77,8 +77,12 @@ interface ParseUrlOutline {
 
             val host = groups[2]
             val port = groups[3].toInt()
-            val queryParams =
-                groups[4].split("&").associate { q -> q.split("=").let { it[0] to it[1] } }
+
+            val queryParams = groups[4].split("&").associate { q ->
+                q.split("=").let {
+                    it[0] to Uri.decode(it.getOrElse(1) { "" })
+                }
+            }
             val serverName = groups[5]
 
             return ShadowSocksInfo(method, password, host, port, queryParams["prefix"])
