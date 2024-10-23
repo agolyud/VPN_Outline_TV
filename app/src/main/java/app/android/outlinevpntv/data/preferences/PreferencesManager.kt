@@ -52,11 +52,20 @@ class PreferencesManager(context: Context) {
         return preferences.getString(KEY_SELECTED_DNS, null)
     }
 
+    fun saveSelectedApps(apps: List<String>) {
+        preferences.edit().putStringSet(KEY_SELECTED_APPS, apps.toSet()).apply()
+    }
+
+    fun getSelectedApps(): Set<String>? {
+        return preferences.getStringSet(KEY_SELECTED_APPS, null)
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN = "vpn_key"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
         private const val KEY_SERVER_NAME = "server_name"
         private const val KEY_SELECTED_DNS = "selected_dns"
+        private const val KEY_SELECTED_APPS = "selected_apps"
     }
 }

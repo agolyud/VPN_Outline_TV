@@ -189,4 +189,5 @@
     <string name="license">Лицензия</string>
     <string name="services">Сервисы (Скоро)</string>
     <string name="services_description">Выберите приложения для использования в VPN</string>
+    <string name="all_applications">Все приложения</string>
 </resources>

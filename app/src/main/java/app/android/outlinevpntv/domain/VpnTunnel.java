@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -83,6 +84,7 @@ public class VpnTunnel {
             dnsResolverAddress = preferencesManager.getSelectedDns() != null ?
                     preferencesManager.getSelectedDns() :
                     selectDnsResolverAddress();
+
             VpnService.Builder builder =
                     vpnService.newBuilder()
                             .setSession(vpnService.getApplicationName())
@@ -92,14 +94,21 @@ public class VpnTunnel {
                             .addDnsServer(dnsResolverAddress)
                             .setBlocking(true);
 
-            // Разрешаем работу VPN только для YouTube
-            try {
-                builder.addAllowedApplication("com.google.android.youtube");
-            } catch (PackageManager.NameNotFoundException e) {
-                LOG.severe("YouTube не найдено в установленных приложениях");
+            Set<String> selectedApps = preferencesManager.getSelectedApps();
+            if (selectedApps != null && !selectedApps.isEmpty()) {
+                if (selectedApps.contains("all_apps")) {
+                    builder.addDisallowedApplication(vpnService.getPackageName());
+                } else {
+                    for (String appPackage : selectedApps) {
+                        try {
+                            builder.addAllowedApplication(appPackage);
+                        } catch (PackageManager.NameNotFoundException e) {
+                        }
+                    }
+                }
+            } else {
                 return false;
             }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 final Network activeNetwork =
                         vpnService.getSystemService(ConnectivityManager.class).getActiveNetwork();
@@ -108,13 +117,10 @@ public class VpnTunnel {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 builder.setMetered(false);
             }
-
-            // Добавляем маршруты для исключенных подсетей
             final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
             for (Subnet subnet : reservedBypassSubnets) {
                 builder.addRoute(subnet.address, subnet.prefix);
             }
-
             tunFd = builder.establish();
             return tunFd != null;
         } catch (Exception e) {
@@ -122,6 +128,8 @@ public class VpnTunnel {
         }
         return false;
     }
+
+
 
 
     /* Stops routing device traffic through the VPN. */

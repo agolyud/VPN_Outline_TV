@@ -189,4 +189,5 @@
     <string name="license">License</string>
     <string name="services">Services(Coming soon)</string>
     <string name="services_description">Select apps to use with VPN</string>
+    <string name="all_applications">All applications</string>
 </resources>

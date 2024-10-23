@@ -151,36 +151,36 @@ fun SettingsDialog(
                 )
                 Column(Modifier.selectableGroup()) {
                     SettingsDialogThemeChooserRow(
-                        text = "Все приложения",
-                        selected = selectedApps.contains("Все приложения"),
+                        text = stringResource(id = R.string.all_applications),
+                        selected = selectedApps.contains("all_apps"),
                         onClick = {
-                            if (selectedApps.contains("Все приложения")) {
-                                selectedApps.remove("Все приложения")
+                            if (selectedApps.contains("all_apps")) {
+                                selectedApps.remove("all_apps")
                             } else {
                                 selectedApps.clear()
-                                selectedApps.add("Все приложения")
+                                selectedApps.add("all_apps")
                             }
                         }
                     )
                     SettingsDialogThemeChooserRow(
                         text = "YouTube",
-                        selected = selectedApps.contains("YouTube"),
+                        selected = selectedApps.contains("com.google.android.youtube"),
                         onClick = {
-                            if (selectedApps.contains("YouTube")) {
-                                selectedApps.remove("YouTube")
+                            if (selectedApps.contains("com.google.android.youtube")) {
+                                selectedApps.remove("com.google.android.youtube")
                             } else {
-                                selectedApps.add("YouTube")
+                                selectedApps.add("com.google.android.youtube")
                             }
                         }
                     )
                     SettingsDialogThemeChooserRow(
                         text = "Instagram",
-                        selected = selectedApps.contains("Instagram"),
+                        selected = selectedApps.contains("com.instagram.android"),
                         onClick = {
-                            if (selectedApps.contains("Instagram")) {
-                                selectedApps.remove("Instagram")
+                            if (selectedApps.contains("com.instagram.android")) {
+                                selectedApps.remove("com.instagram.android")
                             } else {
-                                selectedApps.add("Instagram")
+                                selectedApps.add("com.instagram.android")
                             }
                         }
                     )
