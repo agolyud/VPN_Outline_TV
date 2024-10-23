@@ -48,7 +48,6 @@ fun SettingsDialog(
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit
 ) {
-
     var selectedDns by remember {
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
@@ -59,6 +58,18 @@ fun SettingsDialog(
         if (preferencesManager.getSelectedDns().isNullOrEmpty()) {
             preferencesManager.saveSelectedDns("8.8.8.8")
             onDnsSelected("8.8.8.8")
+        } else {
+            selectedDns = preferencesManager.getSelectedDns() ?: "8.8.8.8"
+        }
+
+        if (preferencesManager.getSelectedApps().isNullOrEmpty()) {
+            selectedApps.add("all_apps")
+            preferencesManager.saveSelectedApps(selectedApps.toList())
+        } else {
+            selectedApps.clear()
+            preferencesManager.getSelectedApps()?.let { savedApps ->
+                selectedApps.addAll(savedApps)
+            }
         }
     }
 
@@ -170,6 +181,7 @@ fun SettingsDialog(
                                 selectedApps.remove("com.google.android.youtube")
                             } else {
                                 selectedApps.add("com.google.android.youtube")
+                                selectedApps.remove("all_apps")
                             }
                         }
                     )
@@ -181,6 +193,7 @@ fun SettingsDialog(
                                 selectedApps.remove("com.instagram.android")
                             } else {
                                 selectedApps.add("com.instagram.android")
+                                selectedApps.remove("all_apps")
                             }
                         }
                     )
