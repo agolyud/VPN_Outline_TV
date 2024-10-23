@@ -41,6 +41,7 @@ import androidx.compose.ui.window.DialogProperties
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun SettingsDialog(
@@ -48,16 +49,28 @@ fun SettingsDialog(
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit
 ) {
-
     var selectedDns by remember {
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
+    val selectedApps = remember { mutableStateListOf<String>() }
 
     LaunchedEffect(Unit) {
         if (preferencesManager.getSelectedDns().isNullOrEmpty()) {
             preferencesManager.saveSelectedDns("8.8.8.8")
             onDnsSelected("8.8.8.8")
+        } else {
+            selectedDns = preferencesManager.getSelectedDns() ?: "8.8.8.8"
+        }
+
+        if (preferencesManager.getSelectedApps().isNullOrEmpty()) {
+            selectedApps.add("all_apps")
+            preferencesManager.saveSelectedApps(selectedApps.toList())
+        } else {
+            selectedApps.clear()
+            preferencesManager.getSelectedApps()?.let { savedApps ->
+                selectedApps.addAll(savedApps)
+            }
         }
     }
 
@@ -74,7 +87,6 @@ fun SettingsDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 SettingsDialogSectionTitle(text = "Server DNS")
                 Column(Modifier.selectableGroup()) {
-
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
                         selected = selectedDns == "8.8.8.8",
@@ -151,14 +163,43 @@ fun SettingsDialog(
                 )
                 Column(Modifier.selectableGroup()) {
                     SettingsDialogThemeChooserRow(
+                        text = stringResource(id = R.string.all_applications),
+                        selected = selectedApps.contains("all_apps"),
+                        onClick = {
+                            if (selectedApps.contains("all_apps")) {
+                                selectedApps.remove("all_apps")
+                            } else {
+                                selectedApps.clear()
+                                selectedApps.add("all_apps")
+                            }
+                        }
+                    )
+                    SettingsDialogThemeChooserRow(
                         text = "YouTube",
-                        selected = false,
-                        onClick = { /* TODO */ }
+                        selected = selectedApps.contains("com.google.android.youtube"),
+                        onClick = {
+                            if (selectedApps.contains("com.google.android.youtube")) {
+                                selectedApps.remove("com.google.android.youtube")
+                            } else {
+                                selectedApps.add("com.google.android.youtube")
+                                selectedApps.remove("all_apps")
+                            }
+                        }
+                    )
+                    SettingsDialogThemeChooserRow(
+                        text = "Instagram",
+                        selected = selectedApps.contains("com.instagram.android"),
+                        onClick = {
+                            if (selectedApps.contains("com.instagram.android")) {
+                                selectedApps.remove("com.instagram.android")
+                            } else {
+                                selectedApps.add("com.instagram.android")
+                                selectedApps.remove("all_apps")
+                            }
+                        }
                     )
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
-
                 LinksPanel()
 
             }
@@ -170,7 +211,10 @@ fun SettingsDialog(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
-                    .clickable { onDismiss() },
+                    .clickable {
+                        preferencesManager.saveSelectedApps(selectedApps.toList())
+                        onDismiss()
+                    },
             )
         }
     )
@@ -184,53 +228,68 @@ fun LinksPanel() {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(
-            space = 16.dp,
-            alignment = Alignment.CenterHorizontally,
-        ),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
 
         Row(
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 16.dp,
+                alignment = Alignment.CenterHorizontally,
+            ),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clickable {
-                    try {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse(context.getString(R.string.github_link))
-                        )
-                        context.startActivity(intent)
-                    } catch (_: ActivityNotFoundException) {}
-                }
-                .padding(8.dp)
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
-                contentDescription = "Open GitHub",
-                tint = Color.Black
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = context.getString(R.string.by_author),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
-            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        try {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(context.getString(R.string.github_link))
+                            )
+                            context.startActivity(intent)
+                        } catch (_: ActivityNotFoundException) {}
+                    }
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
+                    contentDescription = "Open GitHub",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = context.getString(R.string.by_author),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black,
+                )
+            }
+
+            NiaTextButton(
+                onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
+            ) {
+                Text(
+                    text = stringResource(id = R.string.license),
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
-        NiaTextButton(
-            onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
-        ) {
-            Text(
-                text = stringResource(id = R.string.license),
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = stringResource(id = R.string.thank_you_message),
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
+
 
 
 
