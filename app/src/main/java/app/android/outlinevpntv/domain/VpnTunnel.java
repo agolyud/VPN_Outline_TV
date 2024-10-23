@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import app.android.outlinevpntv.R;
+import app.android.outlinevpntv.data.preferences.PreferencesManager;
 import tun2socks.Tun2socks;
 import tun2socks.Tunnel;
 
@@ -37,6 +38,7 @@ import tun2socks.Tunnel;
  */
 public class VpnTunnel {
     private static final Logger LOG = Logger.getLogger(VpnTunnel.class.getName());
+
 
     private static final String VPN_INTERFACE_PRIVATE_LAN = "10.111.222.%s";
     private static final int VPN_INTERFACE_PREFIX_LENGTH = 24;
@@ -50,6 +52,7 @@ public class VpnTunnel {
     private String dnsResolverAddress;
     private ParcelFileDescriptor tunFd;
     private Tunnel tunnel;
+    private final PreferencesManager preferencesManager;
 
     /**
      * Constructor.
@@ -57,7 +60,8 @@ public class VpnTunnel {
      * @param vpnService (required) service to access system VPN APIs.
      * @throws IllegalArgumentException if |vpnService| is null.
      */
-    public VpnTunnel(OutlineVpnService vpnService) {
+    public VpnTunnel(OutlineVpnService vpnService, PreferencesManager preferencesManager) {
+        this.preferencesManager = preferencesManager;
         if (vpnService == null) {
             throw new IllegalArgumentException("Must provide a VPN service instance");
         }
@@ -73,7 +77,9 @@ public class VpnTunnel {
     public synchronized boolean establishVpn() {
         LOG.info("Establishing the VPN.");
         try {
-            dnsResolverAddress = selectDnsResolverAddress();
+            dnsResolverAddress = preferencesManager.getSelectedDns() != null ?
+                    preferencesManager.getSelectedDns() :
+                    selectDnsResolverAddress();
             VpnService.Builder builder =
                     vpnService.newBuilder()
                             .setSession(vpnService.getApplicationName())

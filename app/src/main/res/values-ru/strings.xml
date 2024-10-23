@@ -174,7 +174,7 @@
     <string name="wrong_outline_key_format">Неправильный формат ключа Outline</string>
     <string name="disconnect_before_settings">Сначала отключитесь от VPN</string>
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
-    <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="by_author">by AlexGolyd</string>
     <string name="app_update_available">Обновить Outline?</string>
     <string name="loading_progress">Загрузка: %1$s%%</string>
     <string name="update">Обновить</string>
@@ -183,4 +183,10 @@
     <string name="failed_to_get_latest_version">Не удалось получить последнюю версию.</string>
     <string name="update_error">Ошибка при обновлении</string>
     <string name="app_update_downloading">Загрузка обновления…</string>
+    <string name="LICENSE">https://github.com/agolyud/VPN_Outline_TV/blob/main/LICENSE.md</string>
+    <string name="settings">Настройки</string>
+    <string name="DNS">Сервер DNS</string>
+    <string name="license">Лицензия</string>
+    <string name="services">Сервисы (Скоро)</string>
+    <string name="services_description">Выберите приложения для использования в VPN</string>
 </resources>

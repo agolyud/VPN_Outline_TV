@@ -174,7 +174,7 @@
     <string name="disconnect_before_settings">Disconnect from the VPN first</string>
     <string name="wrong_outline_key_format">Wrong Outline key format</string>
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
-    <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="by_author">by AlexGolyd</string>
     <string name="app_update_available">Update Outline?</string>
     <string name="loading_progress">Loading: %1$s%%</string>
     <string name="update">Update</string>
@@ -183,5 +183,10 @@
     <string name="failed_to_get_latest_version">Failed to get latest version</string>
     <string name="update_error">Update error</string>
     <string name="app_update_downloading">Downloading update…</string>
-
+    <string name="LICENSE">https://github.com/agolyud/VPN_Outline_TV/blob/main/LICENSE.md</string>
+    <string name="settings">Settings</string>
+    <string name="DNS">Server DNS</string>
+    <string name="license">License</string>
+    <string name="services">Services(Coming soon)</string>
+    <string name="services_description">Select apps to use with VPN</string>
 </resources>
