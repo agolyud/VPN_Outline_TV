@@ -39,7 +39,6 @@ interface ParseUrlOutline {
             }
         }
 
-
         override fun extractServerHost(ssUrl: String): String? {
             val parsedUrl = Uri.parse(ssUrl)
             return parsedUrl.host
@@ -61,6 +60,14 @@ interface ParseUrlOutline {
             val jsonResponse = fetchJsonFromUrl(httpsUrl)
             Log.d("ParseUrl", "JSON Response: $jsonResponse")
 
+            // Проверяем, является ли ответ строкой с ss:// URL
+            if (jsonResponse.startsWith("ss://")) {
+                Log.d("ParseUrl", "Embedded ss URL found in response: $jsonResponse")
+                // Парсим как обычный ss URL
+                return parseShadowSocksSsUrl(jsonResponse)
+            }
+
+            // Если это JSON, продолжаем его разбор
             val jsonObject = JSONObject(jsonResponse)
 
             val host = jsonObject.getString("server")

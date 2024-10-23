@@ -174,7 +174,7 @@
     <string name="wrong_outline_key_format">Неправильный формат ключа Outline</string>
     <string name="disconnect_before_settings">Сначала отключитесь от VPN</string>
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
-    <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="by_author">by AlexGolyd</string>
     <string name="app_update_available">Обновить Outline?</string>
     <string name="loading_progress">Загрузка: %1$s%%</string>
     <string name="update">Обновить</string>

@@ -174,7 +174,7 @@
     <string name="disconnect_before_settings">Disconnect from the VPN first</string>
     <string name="wrong_outline_key_format">Wrong Outline key format</string>
     <string name="github_link">https://github.com/agolyud/VPN_Outline_TV</string>
-    <string name="by_author">by AlexGolyd and khoben</string>
+    <string name="by_author">by AlexGolyd</string>
     <string name="app_update_available">Update Outline?</string>
     <string name="loading_progress">Loading: %1$s%%</string>
     <string name="update">Update</string>
