@@ -14,6 +14,8 @@
 
 package app.android.outlinevpntv.domain;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.VpnService;
@@ -22,6 +24,7 @@ import android.os.ParcelFileDescriptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.logging.Level;
@@ -87,8 +90,15 @@ public class VpnTunnel {
                             .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
                                     VPN_INTERFACE_PREFIX_LENGTH)
                             .addDnsServer(dnsResolverAddress)
-                            .setBlocking(true)
-                            .addDisallowedApplication(vpnService.getPackageName());
+                            .setBlocking(true);
+
+            // Разрешаем работу VPN только для YouTube
+            try {
+                builder.addAllowedApplication("com.google.android.youtube");
+            } catch (PackageManager.NameNotFoundException e) {
+                LOG.severe("YouTube не найдено в установленных приложениях");
+                return false;
+            }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 final Network activeNetwork =
@@ -98,12 +108,13 @@ public class VpnTunnel {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 builder.setMetered(false);
             }
-            // In absence of an API to remove routes, instead of adding the default route (0.0.0.0/0),
-            // retrieve the list of subnets that excludes those reserved for special use.
+
+            // Добавляем маршруты для исключенных подсетей
             final ArrayList<Subnet> reservedBypassSubnets = getReservedBypassSubnets();
             for (Subnet subnet : reservedBypassSubnets) {
                 builder.addRoute(subnet.address, subnet.prefix);
             }
+
             tunFd = builder.establish();
             return tunFd != null;
         } catch (Exception e) {
@@ -111,6 +122,7 @@ public class VpnTunnel {
         }
         return false;
     }
+
 
     /* Stops routing device traffic through the VPN. */
     public synchronized void tearDownVpn() {
