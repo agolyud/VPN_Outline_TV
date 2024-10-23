@@ -114,15 +114,6 @@ class MainViewModel(
         }
     }
 
-//    fun startVpnWithSelectedDns() {
-//        viewModelScope.launch {
-//            val success = vpnManager.establishVpn()
-//            if (!success) {
-//                errorVpnEvent()
-//            }
-//        }
-//    }
-
     private fun errorVpnEvent() {
         _errorEvent.value = Unit
         checkVpnConnectionState()

@@ -42,12 +42,17 @@ import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 
 
+import androidx.compose.runtime.*
+
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit
 ) {
+
+    var selectedDns by remember { mutableStateOf(preferencesManager.getSelectedDns() ?: "") }
+
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
         onDismissRequest = { onDismiss() },
@@ -59,30 +64,32 @@ fun SettingsDialog(
         },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                // Выбор DNS
                 SettingsDialogSectionTitle(text = "Выбор DNS")
                 Column(Modifier.selectableGroup()) {
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
-                        selected = preferencesManager.getSelectedDns() == "8.8.8.8",
+                        selected = selectedDns == "8.8.8.8",
                         onClick = {
                             preferencesManager.saveSelectedDns("8.8.8.8")
+                            selectedDns = "8.8.8.8"
                             onDnsSelected("8.8.8.8")
                         }
                     )
                     SettingsDialogThemeChooserRow(
                         text = "Cloudflare DNS",
-                        selected = preferencesManager.getSelectedDns() == "1.1.1.1",
+                        selected = selectedDns == "1.1.1.1",
                         onClick = {
                             preferencesManager.saveSelectedDns("1.1.1.1")
+                            selectedDns = "1.1.1.1"
                             onDnsSelected("1.1.1.1")
                         }
                     )
                     SettingsDialogThemeChooserRow(
                         text = "Yandex DNS",
-                        selected = preferencesManager.getSelectedDns() == "77.88.8.8",
+                        selected = selectedDns == "77.88.8.8",
                         onClick = {
                             preferencesManager.saveSelectedDns("77.88.8.8")
+                            selectedDns = "77.88.8.8"
                             onDnsSelected("77.88.8.8")
                         }
                     )
@@ -130,7 +137,6 @@ fun SettingsDialog(
 }
 
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LinksPanel() {
     val context = LocalContext.current
