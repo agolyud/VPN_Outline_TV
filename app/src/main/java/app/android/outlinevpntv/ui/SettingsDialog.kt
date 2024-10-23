@@ -41,6 +41,7 @@ import androidx.compose.ui.window.DialogProperties
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun SettingsDialog(
@@ -229,53 +230,68 @@ fun LinksPanel() {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(
-            space = 16.dp,
-            alignment = Alignment.CenterHorizontally,
-        ),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
 
         Row(
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 16.dp,
+                alignment = Alignment.CenterHorizontally,
+            ),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clickable {
-                    try {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse(context.getString(R.string.github_link))
-                        )
-                        context.startActivity(intent)
-                    } catch (_: ActivityNotFoundException) {}
-                }
-                .padding(8.dp)
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
-                contentDescription = "Open GitHub",
-                tint = Color.Black
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = context.getString(R.string.by_author),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
-            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        try {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(context.getString(R.string.github_link))
+                            )
+                            context.startActivity(intent)
+                        } catch (_: ActivityNotFoundException) {}
+                    }
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
+                    contentDescription = "Open GitHub",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = context.getString(R.string.by_author),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black,
+                )
+            }
+
+            NiaTextButton(
+                onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
+            ) {
+                Text(
+                    text = stringResource(id = R.string.license),
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
-        NiaTextButton(
-            onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
-        ) {
-            Text(
-                text = stringResource(id = R.string.license),
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = stringResource(id = R.string.thank_you_message),
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
+
 
 
 

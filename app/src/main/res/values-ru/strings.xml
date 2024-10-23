@@ -190,4 +190,5 @@
     <string name="services">Сервисы</string>
     <string name="services_description">Выберите приложения для использования в VPN</string>
     <string name="all_applications">Все приложения</string>
+    <string name="thank_you_message">Спасибо за помощь в разработке khoben</string>
 </resources>
