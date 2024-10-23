@@ -50,7 +50,6 @@ fun SettingsDialog(
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit
 ) {
-
     var selectedDns by remember { mutableStateOf(preferencesManager.getSelectedDns() ?: "") }
 
     AlertDialog(
@@ -93,27 +92,41 @@ fun SettingsDialog(
                             onDnsSelected("77.88.8.8")
                         }
                     )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Блок с Службами
-                SettingsDialogSectionTitle(text = "Службы")
-                Column(Modifier.selectableGroup()) {
                     SettingsDialogThemeChooserRow(
-                        text = "Служба 1",
-                        selected = false,
-                        onClick = { /* TODO: Обработчик для выбора Службы 1 */ }
+                        text = "AdGuard DNS",
+                        selected = selectedDns == "94.140.14.14",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("94.140.14.14")
+                            selectedDns = "94.140.14.14"
+                            onDnsSelected("94.140.14.14")
+                        }
                     )
                     SettingsDialogThemeChooserRow(
-                        text = "Служба 2",
-                        selected = true,
-                        onClick = { /* TODO: Обработчик для выбора Службы 2 */ }
+                        text = "OpenDNS",
+                        selected = selectedDns == "208.67.222.222",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("208.67.222.222")
+                            selectedDns = "208.67.222.222"
+                            onDnsSelected("208.67.222.222")
+                        }
                     )
                     SettingsDialogThemeChooserRow(
-                        text = "Служба 3",
-                        selected = false,
-                        onClick = { /* TODO: Обработчик для выбора Службы 3 */ }
+                        text = "Quad9 DNS",
+                        selected = selectedDns == "9.9.9.9",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("9.9.9.9")
+                            selectedDns = "9.9.9.9"
+                            onDnsSelected("9.9.9.9")
+                        }
+                    )
+                    SettingsDialogThemeChooserRow(
+                        text = "Comodo Secure DNS",
+                        selected = selectedDns == "8.26.56.26",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("8.26.56.26")
+                            selectedDns = "8.26.56.26"
+                            onDnsSelected("8.26.56.26")
+                        }
                     )
                 }
 
@@ -135,6 +148,7 @@ fun SettingsDialog(
         }
     )
 }
+
 
 
 @Composable
@@ -237,10 +251,15 @@ fun NiaTextButton(
     }
 }
 
-//@Preview
-//@Composable
-//private fun PreviewCustomSettingsDialog() {
-//    SettingsDialog(
-//        onDismiss = {},
-//        onDnsSelected = {})
-//}
+@Preview
+@Composable
+private fun PreviewCustomSettingsDialog() {
+    val context = LocalContext.current
+    val preferencesManager = PreferencesManager(context)
+
+    SettingsDialog(
+        onDismiss = {},
+        preferencesManager = preferencesManager,
+        onDnsSelected = { dns ->}
+    )
+}
