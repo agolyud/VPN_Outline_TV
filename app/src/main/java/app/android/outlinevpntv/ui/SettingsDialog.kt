@@ -39,11 +39,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
 
 
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
+    preferencesManager: PreferencesManager,
+    onDnsSelected: (String) -> Unit
 ) {
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -61,18 +64,27 @@ fun SettingsDialog(
                 Column(Modifier.selectableGroup()) {
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
-                        selected = true,
-                        onClick = { /* TODO: Обработчик для выбора Google DNS */ }
+                        selected = preferencesManager.getSelectedDns() == "8.8.8.8",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("8.8.8.8")
+                            onDnsSelected("8.8.8.8")
+                        }
                     )
                     SettingsDialogThemeChooserRow(
                         text = "Cloudflare DNS",
-                        selected = false,
-                        onClick = { /* TODO: Обработчик для выбора Cloudflare DNS */ }
+                        selected = preferencesManager.getSelectedDns() == "1.1.1.1",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("1.1.1.1")
+                            onDnsSelected("1.1.1.1")
+                        }
                     )
                     SettingsDialogThemeChooserRow(
                         text = "Yandex DNS",
-                        selected = false,
-                        onClick = { /* TODO: Обработчик для выбора Yandex DNS */ }
+                        selected = preferencesManager.getSelectedDns() == "77.88.8.8",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("77.88.8.8")
+                            onDnsSelected("77.88.8.8")
+                        }
                     )
                 }
 
@@ -219,8 +231,10 @@ fun NiaTextButton(
     }
 }
 
-@Preview
-@Composable
-private fun PreviewCustomSettingsDialog() {
-    SettingsDialog(onDismiss = {})
-}
+//@Preview
+//@Composable
+//private fun PreviewCustomSettingsDialog() {
+//    SettingsDialog(
+//        onDismiss = {},
+//        onDnsSelected = {})
+//}

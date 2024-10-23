@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.utils.versionName
 import app.android.outlinevpntv.viewmodel.state.SingleLiveEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
@@ -218,6 +219,8 @@ fun MainScreen(
             if (isSettingsDialogOpen) {
                 SettingsDialog(
                     onDismiss = { isSettingsDialogOpen = false },
+                    preferencesManager = PreferencesManager(context),
+                    onDnsSelected = {}
                 )
             }
 

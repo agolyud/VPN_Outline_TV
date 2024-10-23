@@ -16,6 +16,7 @@ import app.android.outlinevpntv.MainActivity
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.model.ShadowSocksInfo
+import app.android.outlinevpntv.data.preferences.PreferencesManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -39,6 +40,7 @@ class OutlineVpnService : VpnService() {
         private const val NOTIFICATION_COLOR = 0x00BFA5
         private const val NOTIFICATION_SERVICE_ID = 1
 
+        private lateinit var preferencesManager: PreferencesManager
         private var isRunning = false
 
         fun isVpnConnected(): Boolean {
@@ -63,9 +65,12 @@ class OutlineVpnService : VpnService() {
     private lateinit var vpnTunnel: VpnTunnel
 
     override fun onCreate() {
+
+        preferencesManager = PreferencesManager(applicationContext)
+
         Log.i(TAG, "onCreate: ")
         registerNotificationChannel()
-        vpnTunnel = VpnTunnel(this)
+        vpnTunnel = VpnTunnel(this, preferencesManager)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

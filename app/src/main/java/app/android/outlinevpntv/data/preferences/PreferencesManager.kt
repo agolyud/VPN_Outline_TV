@@ -43,10 +43,20 @@ class PreferencesManager(context: Context) {
         return preferences.getString("flag_$ip", null)
     }
 
+
+    fun saveSelectedDns(dns: String) {
+        preferences.edit().putString(KEY_SELECTED_DNS, dns).apply()
+    }
+
+    fun getSelectedDns(): String? {
+        return preferences.getString(KEY_SELECTED_DNS, null)
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN = "vpn_key"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
         private const val KEY_SERVER_NAME = "server_name"
+        private const val KEY_SELECTED_DNS = "selected_dns"
     }
 }
