@@ -53,6 +53,7 @@ fun SettingsDialog(
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
+    val selectedApps = remember { mutableStateListOf<String>() }
 
     LaunchedEffect(Unit) {
         if (preferencesManager.getSelectedDns().isNullOrEmpty()) {
@@ -74,7 +75,6 @@ fun SettingsDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 SettingsDialogSectionTitle(text = "Server DNS")
                 Column(Modifier.selectableGroup()) {
-
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
                         selected = selectedDns == "8.8.8.8",
@@ -151,9 +151,38 @@ fun SettingsDialog(
                 )
                 Column(Modifier.selectableGroup()) {
                     SettingsDialogThemeChooserRow(
+                        text = "Все приложения",
+                        selected = selectedApps.contains("Все приложения"),
+                        onClick = {
+                            if (selectedApps.contains("Все приложения")) {
+                                selectedApps.remove("Все приложения")
+                            } else {
+                                selectedApps.clear()
+                                selectedApps.add("Все приложения")
+                            }
+                        }
+                    )
+                    SettingsDialogThemeChooserRow(
                         text = "YouTube",
-                        selected = false,
-                        onClick = { /* TODO */ }
+                        selected = selectedApps.contains("YouTube"),
+                        onClick = {
+                            if (selectedApps.contains("YouTube")) {
+                                selectedApps.remove("YouTube")
+                            } else {
+                                selectedApps.add("YouTube")
+                            }
+                        }
+                    )
+                    SettingsDialogThemeChooserRow(
+                        text = "Instagram",
+                        selected = selectedApps.contains("Instagram"),
+                        onClick = {
+                            if (selectedApps.contains("Instagram")) {
+                                selectedApps.remove("Instagram")
+                            } else {
+                                selectedApps.add("Instagram")
+                            }
+                        }
                     )
                 }
 
@@ -170,7 +199,10 @@ fun SettingsDialog(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
-                    .clickable { onDismiss() },
+                    .clickable {
+                        preferencesManager.saveSelectedApps(selectedApps.toList())
+                        onDismiss()
+                    },
             )
         }
     )
