@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -79,6 +80,7 @@ fun MainScreen(
     var elapsedTime by remember { mutableIntStateOf(0) }
     val isEditing by remember { mutableStateOf(false) }
     var isDialogOpen by remember { mutableStateOf(false) }
+    var isSettingsDialogOpen by remember { mutableStateOf(false) }
     var isConnectionLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -158,27 +160,16 @@ fun MainScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = Color.Gray
                         )
-                        Text(
-                            text = context.getString(R.string.by_author),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
                     }
 
                 },
                 actions = {
                     IconButton(onClick = {
-                        try {
-                            val intent = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse(context.getString(R.string.github_link))
-                            )
-                            context.startActivity(intent)
-                        } catch (_: ActivityNotFoundException) {}
+                        isSettingsDialogOpen = true
                     }) {
                         Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
-                            contentDescription = "Open GitHub",
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Open Settings",
                             tint = Color.Black
                         )
                     }
@@ -221,6 +212,12 @@ fun MainScreen(
                         onSaveServer(name, key)
                         isDialogOpen = false
                     },
+                )
+            }
+
+            if (isSettingsDialogOpen) {
+                SettingsDialog(
+                    onDismiss = { isSettingsDialogOpen = false },
                 )
             }
 

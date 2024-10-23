@@ -183,5 +183,6 @@
     <string name="failed_to_get_latest_version">Failed to get latest version</string>
     <string name="update_error">Update error</string>
     <string name="app_update_downloading">Downloading update…</string>
+    <string name="LICENSE">https://github.com/agolyud/VPN_Outline_TV/blob/main/LICENSE.md</string>
 
 </resources>

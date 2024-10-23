@@ -183,4 +183,5 @@
     <string name="failed_to_get_latest_version">Не удалось получить последнюю версию.</string>
     <string name="update_error">Ошибка при обновлении</string>
     <string name="app_update_downloading">Загрузка обновления…</string>
+    <string name="LICENSE">https://github.com/agolyud/VPN_Outline_TV/blob/main/LICENSE.md</string>
 </resources>
