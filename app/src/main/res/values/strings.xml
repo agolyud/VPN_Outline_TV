@@ -184,5 +184,9 @@
     <string name="update_error">Update error</string>
     <string name="app_update_downloading">Downloading update…</string>
     <string name="LICENSE">https://github.com/agolyud/VPN_Outline_TV/blob/main/LICENSE.md</string>
-
+    <string name="settings">Settings</string>
+    <string name="DNS">Server DNS</string>
+    <string name="license">License</string>
+    <string name="services">Services</string>
+    <string name="services_description">Select apps to use with VPN</string>
 </resources>

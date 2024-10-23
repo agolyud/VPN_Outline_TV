@@ -40,8 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
-
-
 import androidx.compose.runtime.*
 
 @Composable
@@ -57,14 +55,26 @@ fun SettingsDialog(
         onDismissRequest = { onDismiss() },
         title = {
             Text(
-                text = "Настройки",
+                text = stringResource(id = R.string.settings),
                 style = MaterialTheme.typography.titleLarge,
             )
         },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                SettingsDialogSectionTitle(text = "Выбор DNS")
+                SettingsDialogSectionTitle(text = "Server DNS")
                 Column(Modifier.selectableGroup()) {
+
+                    SettingsDialogThemeChooserRow(
+                        text = "Random DNS",
+                        selected = selectedDns == "8.8.8.8",
+                        onClick = {
+                            preferencesManager.saveSelectedDns("8.8.8.8")
+                            selectedDns = "8.8.8.8"
+                            onDnsSelected("8.8.8.8")
+                        }
+                    )
+
+
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
                         selected = selectedDns == "8.8.8.8",
@@ -132,13 +142,30 @@ fun SettingsDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                SettingsDialogSectionTitle(
+                    text = stringResource(id = R.string.services)
+                )
+                Text(
+                    text = stringResource(id = R.string.services_description),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                )
+                Column(Modifier.selectableGroup()) {
+                    SettingsDialogThemeChooserRow(
+                        text = "YouTube",
+                        selected = false,
+                        onClick = { /* TODO */ }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 LinksPanel()
 
             }
         },
         confirmButton = {
             Text(
-                text = "Закрыть",
+                text = stringResource(id = R.string.save),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
@@ -148,6 +175,7 @@ fun SettingsDialog(
         }
     )
 }
+
 
 
 
@@ -196,7 +224,7 @@ fun LinksPanel() {
             onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
         ) {
             Text(
-                text = "Лицензия",
+                text = stringResource(id = R.string.license),
                 color = Color.Black,
                 fontWeight = FontWeight.Bold
             )

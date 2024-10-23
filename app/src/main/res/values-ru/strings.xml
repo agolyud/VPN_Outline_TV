@@ -184,4 +184,9 @@
     <string name="update_error">Ошибка при обновлении</string>
     <string name="app_update_downloading">Загрузка обновления…</string>
     <string name="LICENSE">https://github.com/agolyud/VPN_Outline_TV/blob/main/LICENSE.md</string>
+    <string name="settings">Настройки</string>
+    <string name="DNS">Сервер DNS</string>
+    <string name="license">Лицензия</string>
+    <string name="services">Сервисы</string>
+    <string name="services_description">Выберите приложения для использования в VPN</string>
 </resources>
