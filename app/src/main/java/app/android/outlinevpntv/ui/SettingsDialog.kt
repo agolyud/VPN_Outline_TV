@@ -48,7 +48,18 @@ fun SettingsDialog(
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit
 ) {
-    var selectedDns by remember { mutableStateOf(preferencesManager.getSelectedDns() ?: "") }
+
+    var selectedDns by remember {
+        mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
+    }
+
+
+    LaunchedEffect(Unit) {
+        if (preferencesManager.getSelectedDns().isNullOrEmpty()) {
+            preferencesManager.saveSelectedDns("8.8.8.8")
+            onDnsSelected("8.8.8.8")
+        }
+    }
 
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -63,17 +74,6 @@ fun SettingsDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 SettingsDialogSectionTitle(text = "Server DNS")
                 Column(Modifier.selectableGroup()) {
-
-                    SettingsDialogThemeChooserRow(
-                        text = "Random DNS",
-                        selected = selectedDns == "8.8.8.8",
-                        onClick = {
-                            preferencesManager.saveSelectedDns("8.8.8.8")
-                            selectedDns = "8.8.8.8"
-                            onDnsSelected("8.8.8.8")
-                        }
-                    )
-
 
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
