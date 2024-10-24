@@ -84,7 +84,6 @@ fun MainScreen(
     var isDialogOpen by remember { mutableStateOf(false) }
     var isSettingsDialogOpen by remember { mutableStateOf(false) }
     var isConnectionLoading by remember { mutableStateOf(false) }
-    var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -167,18 +166,6 @@ fun MainScreen(
 
                 },
                 actions = {
-
-                    IconButton(onClick = {
-                        isAppSelectionDialogOpen = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Fitbit,
-                            contentDescription = "Open App Selection",
-                            tint = Color.Black
-                        )
-                    }
-
-
                     IconButton(onClick = {
                         isSettingsDialogOpen = true
                     }) {
@@ -237,12 +224,6 @@ fun MainScreen(
                     onDismiss = { isSettingsDialogOpen = false },
                     preferencesManager = PreferencesManager(context),
                     onDnsSelected = {}
-                )
-            }
-
-            if (isAppSelectionDialogOpen) {
-                AppSelectionDialog(
-                    onDismiss = { isAppSelectionDialogOpen = false }
                 )
             }
 

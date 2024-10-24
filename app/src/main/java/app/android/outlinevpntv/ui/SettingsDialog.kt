@@ -19,6 +19,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +55,9 @@ fun SettingsDialog(
     }
 
     val selectedApps = remember { mutableStateListOf<String>() }
+    var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val packageManager = context.packageManager
 
     LaunchedEffect(Unit) {
         if (preferencesManager.getSelectedDns().isNullOrEmpty()) {
@@ -72,6 +76,16 @@ fun SettingsDialog(
                 selectedApps.addAll(savedApps)
             }
         }
+    }
+
+    if (isAppSelectionDialogOpen) {
+        AppSelectionDialog(
+            onDismiss = { isAppSelectionDialogOpen = false },
+            onAppsSelected = { apps ->
+                selectedApps.remove("all_apps")
+                selectedApps.addAll(apps)
+            }
+        )
     }
 
     AlertDialog(
@@ -161,7 +175,7 @@ fun SettingsDialog(
                     text = stringResource(id = R.string.services_description),
                     style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
                 )
-                Column(Modifier.selectableGroup()) {
+                Column {
                     SettingsDialogThemeChooserRow(
                         text = stringResource(id = R.string.all_applications),
                         selected = selectedApps.contains("all_apps"),
@@ -174,34 +188,37 @@ fun SettingsDialog(
                             }
                         }
                     )
-                    SettingsDialogThemeChooserRow(
-                        text = "YouTube",
-                        selected = selectedApps.contains("com.google.android.youtube"),
-                        onClick = {
-                            if (selectedApps.contains("com.google.android.youtube")) {
-                                selectedApps.remove("com.google.android.youtube")
-                            } else {
-                                selectedApps.add("com.google.android.youtube")
-                                selectedApps.remove("all_apps")
-                            }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Кнопка "Добавить приложение"
+                    Button(
+                        onClick = { isAppSelectionDialogOpen = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Добавить приложение")
+                    }
+
+                    // Отображение выбранных приложений
+                    selectedApps.filter { it != "all_apps" }.forEach { packageName ->
+                        val appName = try {
+                            val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+                            packageManager.getApplicationLabel(applicationInfo).toString()
+                        } catch (e: Exception) {
+                            packageName // Если не удалось получить имя приложения
                         }
-                    )
-                    SettingsDialogThemeChooserRow(
-                        text = "Instagram",
-                        selected = selectedApps.contains("com.instagram.android"),
-                        onClick = {
-                            if (selectedApps.contains("com.instagram.android")) {
-                                selectedApps.remove("com.instagram.android")
-                            } else {
-                                selectedApps.add("com.instagram.android")
-                                selectedApps.remove("all_apps")
+                        SettingsDialogThemeChooserRow(
+                            text = appName,
+                            selected = true,
+                            onClick = {
+                                selectedApps.remove(packageName)
                             }
-                        }
-                    )
+                        )
+                    }
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
                 LinksPanel()
-
             }
         },
         confirmButton = {
@@ -219,6 +236,7 @@ fun SettingsDialog(
         }
     )
 }
+
 
 
 

@@ -18,23 +18,38 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppSelectionDialog(onDismiss: () -> Unit) {
+fun AppSelectionDialog(
+    onDismiss: () -> Unit,
+    onAppsSelected: (List<String>) -> Unit
+) {
     val context = LocalContext.current
     val appList = remember { mutableStateListOf<AppInfo>() }
+    val selectedApps = remember { mutableStateListOf<String>() }
+    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
+    // Загружаем список приложений при первом запуске
     LaunchedEffect(Unit) {
         val apps = getInstalledApps(requireContext = { context })
         appList.clear()
         appList.addAll(apps)
+
+        // Загружаем ранее выбранные приложения
+        selectedApps.clear()
+        selectedApps.addAll(
+            prefs.getStringSet("selected_apps", setOf())?.filter { it != "all_apps" } ?: emptyList()
+        )
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -42,26 +57,58 @@ fun AppSelectionDialog(onDismiss: () -> Unit) {
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.surface
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Выберите приложение", style = MaterialTheme.typography.bodySmall)
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .heightIn(max = 600.dp) // Ограничиваем максимальную высоту диалога
+            ) {
+                Text(
+                    text = "Выберите приложения",
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                LazyColumn {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f) // Распределяем оставшееся пространство
+                ) {
                     items(appList) { appInfo ->
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            AppListItem(appInfo, onAppSelected = { selectedApp, isSelected ->
-                                val index = appList.indexOf(selectedApp)
-                                if (index >= 0) {
-                                    appList[index] = selectedApp.copy(isSelected = isSelected)
-                                    updateSelectedApps(context, selectedApp.packageName, isSelected)
+                        AppListItem(appInfo, onAppSelected = { selectedApp, isSelected ->
+                            val index = appList.indexOf(selectedApp)
+                            if (index >= 0) {
+                                appList[index] = selectedApp.copy(isSelected = isSelected)
+                                if (isSelected) {
+                                    selectedApps.add(selectedApp.packageName)
+                                } else {
+                                    selectedApps.remove(selectedApp.packageName)
                                 }
-                            })
-                        }
+                            }
+                        })
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("Отмена")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TextButton(onClick = {
+                        onAppsSelected(selectedApps.toList())
+                        onDismiss()
+                    }) {
+                        Text("Сохранить")
                     }
                 }
             }
         }
     }
 }
+
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -135,20 +182,18 @@ fun updateSelectedApps(context: android.content.Context, packageName: String, is
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun Drawable.toBitmap(): Bitmap? {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        when (this) {
-            is BitmapDrawable -> this.bitmap
-            is AdaptiveIconDrawable -> {
-                val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bitmap)
-                this.setBounds(0, 0, canvas.width, canvas.height)
-                this.draw(canvas)
-                bitmap
-            }
-            else -> null
+    return when (this) {
+        is BitmapDrawable -> this.bitmap
+        is AdaptiveIconDrawable -> {
+            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            this.setBounds(0, 0, canvas.width, canvas.height)
+            this.draw(canvas)
+            bitmap
         }
-    } else {
-        TODO("VERSION.SDK_INT < O")
+        else -> null
     }
 }
+
