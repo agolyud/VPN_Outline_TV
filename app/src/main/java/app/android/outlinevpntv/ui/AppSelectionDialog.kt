@@ -1,13 +1,11 @@
 package app.android.outlinevpntv.ui
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.preference.PreferenceManager
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -24,29 +22,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.graphics.drawable.toBitmap
+import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.model.AppInfo
+import app.android.outlinevpntv.domain.installedapps.InstalledApps
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun AppSelectionDialog(
     onDismiss: () -> Unit,
+    initialSelectedApps: List<String>,
     onAppsSelected: (List<String>) -> Unit
 ) {
     val context = LocalContext.current
     val appList = remember { mutableStateListOf<AppInfo>() }
     val selectedApps = remember { mutableStateListOf<String>() }
-    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-
 
     LaunchedEffect(Unit) {
-        val apps = getInstalledApps(requireContext = { context })
+        selectedApps.clear()
+        selectedApps.addAll(initialSelectedApps.filter { it != "all_apps" })
+
+        val apps = InstalledApps(requireContext = { context }, selectedApps = selectedApps)
         appList.clear()
         appList.addAll(apps)
-        selectedApps.clear()
-        selectedApps.addAll(
-            prefs.getStringSet("selected_apps", setOf())?.filter { it != "all_apps" } ?: emptyList()
-        )
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -61,7 +62,7 @@ fun AppSelectionDialog(
                     .heightIn(max = 600.dp)
             ) {
                 Text(
-                    text = "Выберите приложения",
+                    text = stringResource(id = R.string.select_applications),
                     style = MaterialTheme.typography.titleLarge
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -90,14 +91,16 @@ fun AppSelectionDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Отмена")
+                        Text( stringResource(id = R.string.cancel))
+
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(onClick = {
                         onAppsSelected(selectedApps.toList())
                         onDismiss()
                     }) {
-                        Text("Сохранить")
+                        Text( stringResource(id = R.string.save))
+
                     }
                 }
             }
@@ -107,7 +110,6 @@ fun AppSelectionDialog(
 
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppListItem(appInfo: AppInfo, onAppSelected: (AppInfo, Boolean) -> Unit) {
     Row(
@@ -131,49 +133,6 @@ fun AppListItem(appInfo: AppInfo, onAppSelected: (AppInfo, Boolean) -> Unit) {
                 onAppSelected(appInfo, it)
             }
         )
-    }
-}
-
-data class AppInfo(
-    val appName: String,
-    val packageName: String,
-    val icon: Drawable,
-    var isSelected: Boolean = false
-)
-
-
-fun getInstalledApps(requireContext: () -> Context): List<AppInfo> {
-
-    val pm = requireContext().packageManager
-    val installedApps = pm.getInstalledApplications(0)
-    val selectedApps = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        .getStringSet("selected_apps", setOf()) ?: setOf()
-
-    return installedApps
-        .filter { it.packageName != requireContext().packageName }
-        .map {
-            AppInfo(
-                pm.getApplicationLabel(it).toString(),
-                it.packageName,
-                pm.getApplicationIcon(it.packageName),
-                selectedApps.contains(it.packageName)
-            )
-        }
-        .sortedWith(compareBy({ !it.isSelected }, { it.appName.lowercase() }))
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun Drawable.toBitmap(): Bitmap? {
-    return when (this) {
-        is BitmapDrawable -> this.bitmap
-        is AdaptiveIconDrawable -> {
-            val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            this.setBounds(0, 0, canvas.width, canvas.height)
-            this.draw(canvas)
-            bitmap
-        }
-        else -> null
     }
 }
 

@@ -6,8 +6,6 @@ import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -54,6 +51,7 @@ fun SettingsDialog(
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
+
     val selectedApps = remember { mutableStateListOf<String>() }
     var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -67,26 +65,31 @@ fun SettingsDialog(
             selectedDns = preferencesManager.getSelectedDns() ?: "8.8.8.8"
         }
 
-        if (preferencesManager.getSelectedApps().isNullOrEmpty()) {
+        val savedApps = preferencesManager.getSelectedApps()
+        if (savedApps.isNullOrEmpty()) {
+            selectedApps.clear()
             selectedApps.add("all_apps")
             preferencesManager.saveSelectedApps(selectedApps.toList())
         } else {
             selectedApps.clear()
-            preferencesManager.getSelectedApps()?.let { savedApps ->
-                selectedApps.addAll(savedApps)
-            }
+            selectedApps.addAll(savedApps)
         }
     }
 
     if (isAppSelectionDialogOpen) {
         AppSelectionDialog(
             onDismiss = { isAppSelectionDialogOpen = false },
+            initialSelectedApps = selectedApps.toList(),
             onAppsSelected = { apps ->
                 selectedApps.remove("all_apps")
+                selectedApps.clear()
                 selectedApps.addAll(apps)
+
+                preferencesManager.saveSelectedApps(selectedApps.toList())
             }
         )
     }
+
 
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -176,6 +179,15 @@ fun SettingsDialog(
                     style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
                 )
                 Column {
+
+                    Button(
+                        onClick = { isAppSelectionDialogOpen = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text( stringResource(id = R.string.add_an_application))
+                    }
+
+
                     SettingsDialogThemeChooserRow(
                         text = stringResource(id = R.string.all_applications),
                         selected = selectedApps.contains("all_apps"),
@@ -188,15 +200,6 @@ fun SettingsDialog(
                             }
                         }
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = { isAppSelectionDialogOpen = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Добавить приложение")
-                    }
 
                     selectedApps.filter { it != "all_apps" }.forEach { packageName ->
                         val appName = try {
