@@ -191,7 +191,6 @@ fun SettingsDialog(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Кнопка "Добавить приложение"
                     Button(
                         onClick = { isAppSelectionDialogOpen = true },
                         modifier = Modifier.fillMaxWidth()
@@ -199,13 +198,12 @@ fun SettingsDialog(
                         Text("Добавить приложение")
                     }
 
-                    // Отображение выбранных приложений
                     selectedApps.filter { it != "all_apps" }.forEach { packageName ->
                         val appName = try {
                             val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
                             packageManager.getApplicationLabel(applicationInfo).toString()
                         } catch (e: Exception) {
-                            packageName // Если не удалось получить имя приложения
+                            packageName
                         }
                         SettingsDialogThemeChooserRow(
                             text = appName,

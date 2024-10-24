@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
@@ -39,13 +38,11 @@ fun AppSelectionDialog(
     val selectedApps = remember { mutableStateListOf<String>() }
     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
 
-    // Загружаем список приложений при первом запуске
+
     LaunchedEffect(Unit) {
         val apps = getInstalledApps(requireContext = { context })
         appList.clear()
         appList.addAll(apps)
-
-        // Загружаем ранее выбранные приложения
         selectedApps.clear()
         selectedApps.addAll(
             prefs.getStringSet("selected_apps", setOf())?.filter { it != "all_apps" } ?: emptyList()
@@ -61,7 +58,7 @@ fun AppSelectionDialog(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth()
-                    .heightIn(max = 600.dp) // Ограничиваем максимальную высоту диалога
+                    .heightIn(max = 600.dp)
             ) {
                 Text(
                     text = "Выберите приложения",
@@ -71,7 +68,7 @@ fun AppSelectionDialog(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f) // Распределяем оставшееся пространство
+                        .weight(1f)
                 ) {
                     items(appList) { appInfo ->
                         AppListItem(appInfo, onAppSelected = { selectedApp, isSelected ->
@@ -164,23 +161,6 @@ fun getInstalledApps(requireContext: () -> Context): List<AppInfo> {
         }
         .sortedWith(compareBy({ !it.isSelected }, { it.appName.lowercase() }))
 }
-
-
-
-
-fun updateSelectedApps(context: android.content.Context, packageName: String, isSelected: Boolean) {
-    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-    val selectedApps = prefs.getStringSet("selected_apps", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
-
-    if (isSelected) {
-        selectedApps.add(packageName)
-    } else {
-        selectedApps.remove(packageName)
-    }
-
-    prefs.edit().putStringSet("selected_apps", selectedApps).apply()
-}
-
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun Drawable.toBitmap(): Bitmap? {
