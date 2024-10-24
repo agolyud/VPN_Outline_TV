@@ -6,8 +6,6 @@ import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,8 +17,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -41,6 +39,7 @@ import androidx.compose.ui.window.DialogProperties
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun SettingsDialog(
@@ -48,18 +47,49 @@ fun SettingsDialog(
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit
 ) {
-
     var selectedDns by remember {
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
 
+    val selectedApps = remember { mutableStateListOf<String>() }
+    var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val packageManager = context.packageManager
+
     LaunchedEffect(Unit) {
         if (preferencesManager.getSelectedDns().isNullOrEmpty()) {
             preferencesManager.saveSelectedDns("8.8.8.8")
             onDnsSelected("8.8.8.8")
+        } else {
+            selectedDns = preferencesManager.getSelectedDns() ?: "8.8.8.8"
+        }
+
+        val savedApps = preferencesManager.getSelectedApps()
+        if (savedApps.isNullOrEmpty()) {
+            selectedApps.clear()
+            selectedApps.add("all_apps")
+            preferencesManager.saveSelectedApps(selectedApps.toList())
+        } else {
+            selectedApps.clear()
+            selectedApps.addAll(savedApps)
         }
     }
+
+    if (isAppSelectionDialogOpen) {
+        AppSelectionDialog(
+            onDismiss = { isAppSelectionDialogOpen = false },
+            initialSelectedApps = selectedApps.toList(),
+            onAppsSelected = { apps ->
+                selectedApps.remove("all_apps")
+                selectedApps.clear()
+                selectedApps.addAll(apps)
+
+                preferencesManager.saveSelectedApps(selectedApps.toList())
+            }
+        )
+    }
+
 
     AlertDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -74,7 +104,6 @@ fun SettingsDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 SettingsDialogSectionTitle(text = "Server DNS")
                 Column(Modifier.selectableGroup()) {
-
                     SettingsDialogThemeChooserRow(
                         text = "Google DNS",
                         selected = selectedDns == "8.8.8.8",
@@ -149,18 +178,48 @@ fun SettingsDialog(
                     text = stringResource(id = R.string.services_description),
                     style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
                 )
-                Column(Modifier.selectableGroup()) {
+                Column {
+
+                    Button(
+                        onClick = { isAppSelectionDialogOpen = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text( stringResource(id = R.string.add_an_application))
+                    }
+
+
                     SettingsDialogThemeChooserRow(
-                        text = "YouTube",
-                        selected = false,
-                        onClick = { /* TODO */ }
+                        text = stringResource(id = R.string.all_applications),
+                        selected = selectedApps.contains("all_apps"),
+                        onClick = {
+                            if (selectedApps.contains("all_apps")) {
+                                selectedApps.remove("all_apps")
+                            } else {
+                                selectedApps.clear()
+                                selectedApps.add("all_apps")
+                            }
+                        }
                     )
+
+                    selectedApps.filter { it != "all_apps" }.forEach { packageName ->
+                        val appName = try {
+                            val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+                            packageManager.getApplicationLabel(applicationInfo).toString()
+                        } catch (e: Exception) {
+                            packageName
+                        }
+                        SettingsDialogThemeChooserRow(
+                            text = appName,
+                            selected = true,
+                            onClick = {
+                                selectedApps.remove(packageName)
+                            }
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
-
                 LinksPanel()
-
             }
         },
         confirmButton = {
@@ -170,11 +229,15 @@ fun SettingsDialog(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
-                    .clickable { onDismiss() },
+                    .clickable {
+                        preferencesManager.saveSelectedApps(selectedApps.toList())
+                        onDismiss()
+                    },
             )
         }
     )
 }
+
 
 
 
@@ -184,53 +247,68 @@ fun LinksPanel() {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(
-            space = 16.dp,
-            alignment = Alignment.CenterHorizontally,
-        ),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
 
         Row(
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 16.dp,
+                alignment = Alignment.CenterHorizontally,
+            ),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .clickable {
-                    try {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse(context.getString(R.string.github_link))
-                        )
-                        context.startActivity(intent)
-                    } catch (_: ActivityNotFoundException) {}
-                }
-                .padding(8.dp)
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
-                contentDescription = "Open GitHub",
-                tint = Color.Black
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = context.getString(R.string.by_author),
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
-            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        try {
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse(context.getString(R.string.github_link))
+                            )
+                            context.startActivity(intent)
+                        } catch (_: ActivityNotFoundException) {}
+                    }
+                    .padding(8.dp)
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
+                    contentDescription = "Open GitHub",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = context.getString(R.string.by_author),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black,
+                )
+            }
+
+            NiaTextButton(
+                onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
+            ) {
+                Text(
+                    text = stringResource(id = R.string.license),
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
-        NiaTextButton(
-            onClick = { uriHandler.openUri(context.getString(R.string.LICENSE)) },
-        ) {
-            Text(
-                text = stringResource(id = R.string.license),
-                color = Color.Black,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        Text(
+            text = stringResource(id = R.string.thank_you_message),
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp)
+        )
     }
 }
+
 
 
 

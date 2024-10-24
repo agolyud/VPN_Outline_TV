@@ -187,6 +187,10 @@
     <string name="settings">Настройки</string>
     <string name="DNS">Сервер DNS</string>
     <string name="license">Лицензия</string>
-    <string name="services">Сервисы (Скоро)</string>
+    <string name="services">Сервисы</string>
     <string name="services_description">Выберите приложения для использования в VPN</string>
+    <string name="all_applications">Все приложения</string>
+    <string name="thank_you_message">Спасибо за помощь в разработке khoben</string>
+    <string name="add_an_application">Добавить приложение</string>
+    <string name="select_applications">Выберите приложения</string>
 </resources>
