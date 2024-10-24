@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Fitbit
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
@@ -83,6 +84,7 @@ fun MainScreen(
     var isDialogOpen by remember { mutableStateOf(false) }
     var isSettingsDialogOpen by remember { mutableStateOf(false) }
     var isConnectionLoading by remember { mutableStateOf(false) }
+    var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -165,6 +167,18 @@ fun MainScreen(
 
                 },
                 actions = {
+
+                    IconButton(onClick = {
+                        isAppSelectionDialogOpen = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Fitbit,
+                            contentDescription = "Open App Selection",
+                            tint = Color.Black
+                        )
+                    }
+
+
                     IconButton(onClick = {
                         isSettingsDialogOpen = true
                     }) {
@@ -174,6 +188,8 @@ fun MainScreen(
                             tint = Color.Black
                         )
                     }
+
+
                 }
             )
 
@@ -221,6 +237,12 @@ fun MainScreen(
                     onDismiss = { isSettingsDialogOpen = false },
                     preferencesManager = PreferencesManager(context),
                     onDnsSelected = {}
+                )
+            }
+
+            if (isAppSelectionDialogOpen) {
+                AppSelectionDialog(
+                    onDismiss = { isAppSelectionDialogOpen = false }
                 )
             }
 
