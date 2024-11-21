@@ -20,7 +20,22 @@ interface ParseUrlOutline {
 
         class Base : Validate {
             override fun validate(ssUrl: String): Boolean {
-                return ssUrl.startsWith("ssconf://") || SS_URL_REGEX.matches(ssUrl)
+                if (ssUrl.startsWith("ssconf://")) {
+                    return true
+                } else if (ssUrl.startsWith("ss://")) {
+                    val ssData = ssUrl.substringAfter("ss://")
+                    return isValidBase64(ssData)
+                }
+                return false
+            }
+
+            private fun isValidBase64(s: String): Boolean {
+                return try {
+                    Base64.decode(s, Base64.DEFAULT)
+                    true
+                } catch (e: IllegalArgumentException) {
+                    false
+                }
             }
         }
     }
@@ -82,18 +97,31 @@ interface ParseUrlOutline {
             return ShadowSocksInfo(method, password, host, port, prefix)
         }
 
-
         fun fetchJsonFromUrl(urlString: String): String {
             val url = URL(urlString)
             val connection = url.openConnection() as HttpURLConnection
             return connection.inputStream.bufferedReader().use { it.readText() }
         }
 
-
         private fun parseShadowSocksSsUrl(ssUrl: String): ShadowSocksInfo {
             Log.d("ParseUrl", "Parsing ss URL: $ssUrl")
 
-            val matchResult = SS_URL_REGEX.find(ssUrl)
+            // Удаляем префикс ss://
+            val ssData = ssUrl.substringAfter("ss://")
+
+            return if (ssData.contains("@")) {
+                // **Частичное кодирование**: ss://base64_encode(method:password)@hostname:port
+                Log.d("ParseUrl", "Detected partial encoding format")
+                parsePartialEncodedSsUrl(ssData)
+            } else {
+                // **Полное кодирование**: ss://base64_encode(method:password@hostname:port)
+                Log.d("ParseUrl", "Detected full encoding format")
+                parseFullyEncodedSsUrl(ssData)
+            }
+        }
+
+        private fun parsePartialEncodedSsUrl(ssData: String): ShadowSocksInfo {
+            val matchResult = SS_URL_REGEX.find("ss://$ssData")
             val groups = matchResult?.groupValues ?: throw IllegalArgumentException("Invalid link format")
 
             Log.d("ParseUrl", "Match groups: $groups")
@@ -116,22 +144,57 @@ interface ParseUrlOutline {
 
             Log.d("ParseUrl", "Host: $host, Port: $port")
 
-            val queryParams = groups[4].split("&").associate { q ->
+            val queryParams = groups.getOrNull(4)?.split("&")?.associate { q ->
                 q.split("=").let {
                     it[0] to Uri.decode(it.getOrElse(1) { "" })
                 }
-            }
-            val serverName = groups[5]
+            } ?: emptyMap()
+            val serverName = groups.getOrNull(5)
 
             Log.d("ParseUrl", "Query params: $queryParams, Server name: $serverName")
 
             return ShadowSocksInfo(method, password, host, port, queryParams["prefix"])
         }
 
+        private fun parseFullyEncodedSsUrl(ssData: String): ShadowSocksInfo {
+            // Декодируем всю строку ssData
+            val decodedData = String(
+                Base64.decode(ssData, Base64.DEFAULT),
+                StandardCharsets.UTF_8
+            )
 
+            Log.d("ParseUrl", "Decoded data: $decodedData")
+
+            // Разбиваем на метод, пароль, хост и порт
+            // Ожидаемый формат: method:password@hostname:port
+            val methodPasswordAndServer = decodedData.split("@")
+            if (methodPasswordAndServer.size != 2) {
+                throw IllegalArgumentException("Invalid decoded data format")
+            }
+
+            val methodAndPassword = methodPasswordAndServer[0]
+            val hostAndPort = methodPasswordAndServer[1]
+
+            val methodPasswordSplit = methodAndPassword.split(":", limit = 2)
+            if (methodPasswordSplit.size != 2) {
+                throw IllegalArgumentException("Invalid method and password format")
+            }
+            val (method, password) = methodPasswordSplit
+
+            val hostPortSplit = hostAndPort.split(":", limit = 2)
+            if (hostPortSplit.size != 2) {
+                throw IllegalArgumentException("Invalid host and port format")
+            }
+            val host = hostPortSplit[0]
+            val port = hostPortSplit[1].toIntOrNull() ?: throw IllegalArgumentException("Invalid port number")
+
+            Log.d("ParseUrl", "Method: $method, Password: $password, Host: $host, Port: $port")
+
+            return ShadowSocksInfo(method, password, host, port, null)
+        }
     }
 
         companion object {
-        private val SS_URL_REGEX = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?\\?([^#]+))?(?:#(.+))?")
-    }
+            private val SS_URL_REGEX = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?\\?([^#]+))?(?:#(.+))?")
+        }
 }
