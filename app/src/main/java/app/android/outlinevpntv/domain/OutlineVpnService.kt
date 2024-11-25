@@ -151,7 +151,7 @@ class OutlineVpnService : VpnService() {
         val remoteUdpForwardingEnabled = false
         try {
             vpnTunnel.connectTunnel(client, remoteUdpForwardingEnabled)
-            isRunning = true // Установка isRunning после успешного подключения
+            isRunning = true
             Log.i(TAG, "startVpn: VPN tunnel established successfully")
             startForegroundWithNotification()
         } catch (e: Exception) {
@@ -288,8 +288,8 @@ class OutlineVpnService : VpnService() {
 
     @Throws(PackageManager.NameNotFoundException::class)
     fun getApplicationName(): String {
-        val packageManager = applicationContext.packageManager
-        val appInfo = packageManager.getApplicationInfo(packageName, 0)
-        return packageManager.getApplicationLabel(appInfo) as String
+        return getString(R.string.app_name)
     }
+
+
 }

@@ -86,7 +86,7 @@ public class VpnTunnel {
                     selectDnsResolverAddress();
 
             VpnService.Builder builder =
-                    vpnService.newBuilder()
+                    vpnService.new Builder()
                             .setSession(vpnService.getApplicationName())
                             .setMtu(VPN_INTERFACE_MTU)
                             .addAddress(String.format(Locale.ROOT, VPN_INTERFACE_PRIVATE_LAN, "1"),
@@ -103,12 +103,19 @@ public class VpnTunnel {
                         try {
                             builder.addAllowedApplication(appPackage);
                         } catch (PackageManager.NameNotFoundException e) {
+                            // Обработка исключения
                         }
                     }
                 }
             } else {
-                return false;
+                // Если приложения не выбраны, применяем VPN ко всем приложениям, кроме самого VPN приложения
+                try {
+                    builder.addDisallowedApplication(vpnService.getPackageName());
+                } catch (PackageManager.NameNotFoundException e) {
+                    // Обработка исключения
+                }
             }
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 final Network activeNetwork =
                         vpnService.getSystemService(ConnectivityManager.class).getActiveNetwork();
@@ -128,8 +135,6 @@ public class VpnTunnel {
         }
         return false;
     }
-
-
 
 
     /* Stops routing device traffic through the VPN. */
