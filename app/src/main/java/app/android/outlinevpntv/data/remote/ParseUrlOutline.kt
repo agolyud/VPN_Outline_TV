@@ -20,22 +20,49 @@ interface ParseUrlOutline {
 
         class Base : Validate {
             override fun validate(ssUrl: String): Boolean {
-                if (ssUrl.startsWith("ssconf://")) {
-                    return true
-                } else if (ssUrl.startsWith("ss://")) {
-                    val ssData = ssUrl.substringAfter("ss://")
-                    return isValidBase64(ssData)
+                return when {
+                    ssUrl.startsWith("ssconf://") -> {
+                        ssUrl.contains(".json") && ssUrl.contains("outline")
+                    }
+                    ssUrl.startsWith("ss://") -> {
+                        val ssData = ssUrl.substringAfter("ss://")
+                        try {
+                            if (ssData.contains("@")) {
+                                validatePartialEncoded(ssData)
+                            } else {
+
+                                isValidBase64(ssData)
+                            }
+                        } catch (e: Exception) {
+                            false
+                        }
+                    }
+                    else -> false
                 }
-                return false
+            }
+
+            private fun validatePartialEncoded(ssData: String): Boolean {
+                val matchResult = SS_URL_REGEX.find("ss://$ssData") ?: return false
+                val groups = matchResult.groupValues
+                if (groups.size < 4) return false
+
+                val base64Encoded = groups[1]
+                return isValidBase64(base64Encoded)
             }
 
             private fun isValidBase64(s: String): Boolean {
                 return try {
-                    Base64.decode(s, Base64.DEFAULT)
-                    true
+                    val decoded = Base64.decode(s, Base64.DEFAULT)
+                    decoded.isNotEmpty()
                 } catch (e: IllegalArgumentException) {
                     false
                 }
+            }
+
+            companion object {
+                private val SS_URL_REGEX = Regex(
+                    "ss://([^@]+)@([^:]+):(\\d+)(?:/\\?([^#]+))?(?:#(.+))?"
+                )
             }
         }
     }
@@ -66,23 +93,18 @@ interface ParseUrlOutline {
 
             Log.d("ParseUrl", "Parsing ssconf URL: $ssConfUrl")
 
-            // Извлекаем URL без фрагмента
             val urlWithoutFragment = ssConfUrl.split("#")[0]
             val httpsUrl = urlWithoutFragment.replace("ssconf://", "https://")
-            // Логируем модифицированный URL
             Log.d("ParseUrl", "Fetching JSON from URL: $httpsUrl")
 
             val jsonResponse = fetchJsonFromUrl(httpsUrl)
             Log.d("ParseUrl", "JSON Response: $jsonResponse")
 
-            // Проверяем, является ли ответ строкой с ss:// URL
             if (jsonResponse.startsWith("ss://")) {
                 Log.d("ParseUrl", "Embedded ss URL found in response: $jsonResponse")
-                // Парсим как обычный ss URL
                 return parseShadowSocksSsUrl(jsonResponse)
             }
 
-            // Если это JSON, продолжаем его разбор
             val jsonObject = JSONObject(jsonResponse)
 
             val host = jsonObject.getString("server")
@@ -91,7 +113,6 @@ interface ParseUrlOutline {
             val method = jsonObject.getString("method")
             val prefix = jsonObject.optString("prefix", null)
 
-            // Логируем извлеченные данные
             Log.d("ParseUrl", "Parsed JSON - Host: $host, Port: $port, Method: $method, Password: $password, Prefix: $prefix")
 
             return ShadowSocksInfo(method, password, host, port, prefix)
@@ -106,15 +127,12 @@ interface ParseUrlOutline {
         private fun parseShadowSocksSsUrl(ssUrl: String): ShadowSocksInfo {
             Log.d("ParseUrl", "Parsing ss URL: $ssUrl")
 
-            // Удаляем префикс ss://
             val ssData = ssUrl.substringAfter("ss://")
 
             return if (ssData.contains("@")) {
-                // **Частичное кодирование**: ss://base64_encode(method:password)@hostname:port
                 Log.d("ParseUrl", "Detected partial encoding format")
                 parsePartialEncodedSsUrl(ssData)
             } else {
-                // **Полное кодирование**: ss://base64_encode(method:password@hostname:port)
                 Log.d("ParseUrl", "Detected full encoding format")
                 parseFullyEncodedSsUrl(ssData)
             }
@@ -157,7 +175,6 @@ interface ParseUrlOutline {
         }
 
         private fun parseFullyEncodedSsUrl(ssData: String): ShadowSocksInfo {
-            // Декодируем всю строку ssData
             val decodedData = String(
                 Base64.decode(ssData, Base64.DEFAULT),
                 StandardCharsets.UTF_8
@@ -165,8 +182,6 @@ interface ParseUrlOutline {
 
             Log.d("ParseUrl", "Decoded data: $decodedData")
 
-            // Разбиваем на метод, пароль, хост и порт
-            // Ожидаемый формат: method:password@hostname:port
             val methodPasswordAndServer = decodedData.split("@")
             if (methodPasswordAndServer.size != 2) {
                 throw IllegalArgumentException("Invalid decoded data format")
@@ -192,9 +207,10 @@ interface ParseUrlOutline {
 
             return ShadowSocksInfo(method, password, host, port, null)
         }
-    }
 
         companion object {
-            private val SS_URL_REGEX = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/?\\?([^#]+))?(?:#(.+))?")
+            private val SS_URL_REGEX = Regex("ss://([^@]+)@([^:]+):(\\d+)(?:/\\?([^#]+))?(?:#(.+))?")
         }
+    }
 }
+
