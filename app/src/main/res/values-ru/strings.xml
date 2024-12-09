@@ -193,4 +193,5 @@
     <string name="thank_you_message">Спасибо за помощь в разработке khoben</string>
     <string name="add_an_application">Добавить приложение</string>
     <string name="select_applications">Выберите приложения</string>
+    <string name="search_apps">Поиск приложений</string>
 </resources>

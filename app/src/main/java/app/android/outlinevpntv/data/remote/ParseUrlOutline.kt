@@ -22,7 +22,8 @@ interface ParseUrlOutline {
             override fun validate(ssUrl: String): Boolean {
                 return when {
                     ssUrl.startsWith("ssconf://") -> {
-                        ssUrl.contains(".json") && ssUrl.contains("outline")
+
+                        true
                     }
                     ssUrl.startsWith("ss://") -> {
                         val ssData = ssUrl.substringAfter("ss://")
@@ -30,7 +31,6 @@ interface ParseUrlOutline {
                             if (ssData.contains("@")) {
                                 validatePartialEncoded(ssData)
                             } else {
-
                                 isValidBase64(ssData)
                             }
                         } catch (e: Exception) {
