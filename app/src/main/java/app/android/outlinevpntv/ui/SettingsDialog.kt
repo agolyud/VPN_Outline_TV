@@ -298,14 +298,6 @@ fun LinksPanel() {
                 )
             }
         }
-
-        Text(
-            text = stringResource(id = R.string.thank_you_message),
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(8.dp)
-        )
     }
 }
 

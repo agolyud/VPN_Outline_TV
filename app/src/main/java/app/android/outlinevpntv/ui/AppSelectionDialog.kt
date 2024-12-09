@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,7 @@ fun AppSelectionDialog(
     val context = LocalContext.current
     val appList = remember { mutableStateListOf<AppInfo>() }
     val selectedApps = remember { mutableStateListOf<String>() }
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         selectedApps.clear()
@@ -48,6 +50,10 @@ fun AppSelectionDialog(
         val apps = InstalledApps(requireContext = { context }, selectedApps = selectedApps)
         appList.clear()
         appList.addAll(apps)
+    }
+
+    val filteredAppList = appList.filter { appInfo ->
+        appInfo.appName.contains(searchQuery, ignoreCase = true)
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -65,13 +71,24 @@ fun AppSelectionDialog(
                     text = stringResource(id = R.string.select_applications),
                     style = MaterialTheme.typography.titleLarge
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(stringResource(id = R.string.search_apps)) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
-                    items(appList) { appInfo ->
+                    items(filteredAppList) { appInfo ->
                         AppListItem(appInfo, onAppSelected = { selectedApp, isSelected ->
                             val index = appList.indexOf(selectedApp)
                             if (index >= 0) {
@@ -91,16 +108,14 @@ fun AppSelectionDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text( stringResource(id = R.string.cancel))
-
+                        Text(stringResource(id = R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(onClick = {
                         onAppsSelected(selectedApps.toList())
                         onDismiss()
                     }) {
-                        Text( stringResource(id = R.string.save))
-
+                        Text(stringResource(id = R.string.save))
                     }
                 }
             }
