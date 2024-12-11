@@ -13,6 +13,7 @@ playServicesFido = "21.1.0"
 material-icons = "1.7.2"
 fragmentKtx = "1.8.3"
 coil-kt = "2.7.0"
+firebaseBom = "33.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +37,11 @@ androidx-material-icons-extended = { group = "androidx.compose.material", name =
 androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil-kt" }
 coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil-kt" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-perf = { group = "com.google.firebase", name = "firebase-perf" }
+firebase-config = { group = "com.google.firebase", name = "firebase-config" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
