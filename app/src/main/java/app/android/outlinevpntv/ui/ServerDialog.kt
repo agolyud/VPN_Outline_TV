@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,7 +68,8 @@ fun ServerDialog(
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
     val preferencesManager = remember { PreferencesManager(context) }
-    val savedVpnKeys = preferencesManager.getVpnKeys()
+
+    var savedVpnKeys by remember { mutableStateOf(preferencesManager.getVpnKeys()) }
 
     var expanded by remember { mutableStateOf(false) }
 
@@ -143,7 +145,7 @@ fun ServerDialog(
                     OutlinedTextField(
                         value = serverName,
                         onValueChange = { serverName = it },
-                        label = { Text("Saved VPN Keys") },
+                        label = { Text(stringResource(id = R.string.saved_vpn_keys)) },
                         singleLine = true,
                         readOnly = true,
                         modifier = Modifier
@@ -159,32 +161,48 @@ fun ServerDialog(
                             }
                         }
                     )
+
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                     ) {
-                        TextButton(onClick = {
-                            expanded = false
-                            serverName = ""
-                            serverKey = ""
-                            validateKey("")
-                        }) {
-                            Text(text = "Добавить новый ключ")
-                        }
-                        savedVpnKeys.forEach { item ->
-                            TextButton(onClick = {
+                        androidx.compose.material3.DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.add_new_key)) },
+                            onClick = {
                                 expanded = false
-                                serverName = item.name
-                                serverKey = item.key
-                                validateKey(item.key)
-                            }) {
-                                Text(text = item.name)
+                                serverName = ""
+                                setServerKey("")
                             }
+                        )
+
+                        savedVpnKeys.forEach { item ->
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text(text = item.name) },
+                                trailingIcon = {
+                                    IconButton(onClick = {
+                                        preferencesManager.deleteVpnKey(item.name)
+                                        savedVpnKeys = preferencesManager.getVpnKeys()
+                                        serverName = ""
+                                        setServerKey("")
+                                        expanded = false
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete"
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    expanded = false
+                                    serverName = item.name
+                                    setServerKey(item.key)
+                                }
+                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
                     value = serverName,
@@ -256,6 +274,7 @@ fun ServerDialog(
                         try {
                             onSave(serverName, serverKey)
                             preferencesManager.addOrUpdateVpnKey(serverName, serverKey)
+                            savedVpnKeys = preferencesManager.getVpnKeys()
                             isLoading = false
                             onDismiss()
                         } catch (e: Exception) {

@@ -27,19 +27,28 @@ class PreferencesManager(context: Context) {
         }
     }
 
-    /** Добавляем или обновляем VPN key. Если key с таким именем уже есть, обновим его. */
+
     fun addOrUpdateVpnKey(serverName: String, key: String) {
         val existingList = getVpnKeys().toMutableList()
         val index = existingList.indexOfFirst { it.name == serverName }
         if (index >= 0) {
-            // Обновляем существующий
             existingList[index] = VpnServerInfo(name = serverName, key = key)
         } else {
-            // Добавляем новый
             existingList.add(VpnServerInfo(name = serverName, key = key))
         }
         saveVpnKeys(existingList)
     }
+
+
+    fun deleteVpnKey(serverName: String) {
+        val existingList = getVpnKeys().toMutableList()
+        val index = existingList.indexOfFirst { it.name == serverName }
+        if (index >= 0) {
+            existingList.removeAt(index)
+            saveVpnKeys(existingList)
+        }
+    }
+
 
     fun saveVpnStartTime(startTime: Long) {
         preferences.edit().putLong(KEY_VPN_START_TIME, startTime).apply()

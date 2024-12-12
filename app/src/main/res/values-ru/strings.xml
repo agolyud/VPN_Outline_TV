@@ -194,4 +194,6 @@
     <string name="add_an_application">Добавить приложение</string>
     <string name="select_applications">Выберите приложения</string>
     <string name="search_apps">Поиск приложений</string>
+    <string name="saved_vpn_keys">Сохраненные VPN ключи</string>
+    <string name="add_new_key">Добавить новый ключ</string>
 </resources>
