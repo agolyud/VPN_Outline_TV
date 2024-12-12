@@ -85,7 +85,7 @@ fun ServerDialog(
             context.contentResolver.openInputStream(uri)?.use { stream ->
                 val data = stream.reader().readText().trim()
                 if (data.isNotBlank()) {
-                     val parsedName = data.substringAfterLast("#", serverName)
+                    val parsedName = data.substringAfterLast("#", serverName)
                     serverName = parsedName
                     setServerKey(data)
                 }
@@ -163,6 +163,14 @@ fun ServerDialog(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
                     ) {
+                        TextButton(onClick = {
+                            expanded = false
+                            serverName = ""
+                            serverKey = ""
+                            validateKey("")
+                        }) {
+                            Text(text = "Добавить новый ключ")
+                        }
                         savedVpnKeys.forEach { item ->
                             TextButton(onClick = {
                                 expanded = false
@@ -274,6 +282,7 @@ fun DialogPreview() {
         onSave = { _, _ -> },
     )
 }
+
 
 
 

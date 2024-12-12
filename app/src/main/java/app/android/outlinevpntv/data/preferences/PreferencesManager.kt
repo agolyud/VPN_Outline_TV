@@ -2,13 +2,10 @@ package app.android.outlinevpntv.data.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import app.android.outlinevpntv.data.model.VpnServerInfo
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-data class VpnServerInfo(
-    val name: String,
-    val key: String
-)
 
 class PreferencesManager(context: Context) {
 
