@@ -11,10 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,16 +67,17 @@ fun ServerDialog(
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
 
     val preferencesManager = remember { PreferencesManager(context) }
-    val savedVpnKey = preferencesManager.getVpnKey().orEmpty()
+    val savedVpnKeys = preferencesManager.getVpnKeys()
+
+    var expanded by remember { mutableStateOf(false) }
 
     fun validateKey(key: String) {
         isKeyError = !viewModel.validate(key)
     }
 
     fun setServerKey(key: String) {
-        validateKey(key)
-        serverName = key.substringAfterLast("#", serverName)
         serverKey = key
+        validateKey(key)
     }
 
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -82,6 +85,8 @@ fun ServerDialog(
             context.contentResolver.openInputStream(uri)?.use { stream ->
                 val data = stream.reader().readText().trim()
                 if (data.isNotBlank()) {
+                     val parsedName = data.substringAfterLast("#", serverName)
+                    serverName = parsedName
                     setServerKey(data)
                 }
             }
@@ -106,6 +111,8 @@ fun ServerDialog(
                     onClick = {
                         val clipboardText = clipboardManager.getText()?.text
                         if (!clipboardText.isNullOrEmpty()) {
+                            val parsedName = clipboardText.substringAfterLast("#", serverName)
+                            serverName = parsedName
                             setServerKey(clipboardText)
                         } else {
                             Toast.makeText(context, R.string.clipboard_empty, Toast.LENGTH_SHORT).show()
@@ -132,15 +139,42 @@ fun ServerDialog(
         },
         text = {
             Column {
-                // Отображаем ранее сохранённый ключ (только для чтения)
-                OutlinedTextField(
-                    value = savedVpnKey,
-                    onValueChange = { },
-                    label = { Text("Saved VPN Key") },
-                    singleLine = true,
-                    readOnly = true,
-                    enabled = false
-                )
+                Box {
+                    OutlinedTextField(
+                        value = serverName,
+                        onValueChange = { serverName = it },
+                        label = { Text("Saved VPN Keys") },
+                        singleLine = true,
+                        readOnly = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .width(200.dp)
+                            .height(56.dp),
+                        trailingIcon = {
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(
+                                    imageVector = Icons.Filled.ArrowDropDown,
+                                    contentDescription = "Dropdown Menu"
+                                )
+                            }
+                        }
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                    ) {
+                        savedVpnKeys.forEach { item ->
+                            TextButton(onClick = {
+                                expanded = false
+                                serverName = item.name
+                                serverKey = item.key
+                                validateKey(item.key)
+                            }) {
+                                Text(text = item.name)
+                            }
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -165,7 +199,11 @@ fun ServerDialog(
                             )
                         }
                     },
-                    onValueChange = { setServerKey(it) },
+                    onValueChange = {
+                        val parsedName = it.substringAfterLast("#", serverName)
+                        serverName = parsedName
+                        setServerKey(it)
+                    },
                     label = { Text(stringResource(id = R.string.outline_key)) },
                     singleLine = true
                 )
@@ -209,8 +247,7 @@ fun ServerDialog(
                         isLoading = true
                         try {
                             onSave(serverName, serverKey)
-                            // После сохранения можно обновить сохранённый ключ, если нужно
-                            preferencesManager.saveVpnKey(serverKey)
+                            preferencesManager.addOrUpdateVpnKey(serverName, serverKey)
                             isLoading = false
                             onDismiss()
                         } catch (e: Exception) {
@@ -226,7 +263,6 @@ fun ServerDialog(
         }
     )
 }
-
 
 @Preview
 @Composable

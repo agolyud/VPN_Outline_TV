@@ -68,14 +68,28 @@ class MainViewModel(
     }
 
     fun loadLastVpnServerState() {
+        // Берём список ключей
+        val keys = preferencesManager.getVpnKeys()
+        // Можно взять последний или первый. Здесь берём последний добавленный.
+        val lastServer = keys.lastOrNull()
+
+        // Если нет сохранённых ключей
+        if (lastServer == null) {
+            _vpnServerState.value = VpnServerStateUi(
+                name = "",
+                host = "",
+                url = "",
+                startTime = 0L
+            )
+            return
+        }
+
+        val url = lastServer.key
+        val host = runCatching { parseUrlOutline.extractServerHost(url) ?: "" }.getOrDefault("")
         val startTime = preferencesManager.getVpnStartTime()
-        val name = preferencesManager.getServerName() ?: ""
-        val url = preferencesManager.getVpnKey() ?: ""
-        val host = runCatching { parseUrlOutline.extractServerHost(url) ?: "" }
-            .getOrDefault("")
 
         _vpnServerState.value = VpnServerStateUi(
-            name = name,
+            name = lastServer.name,
             host = host,
             url = url,
             startTime = startTime
@@ -83,12 +97,11 @@ class MainViewModel(
     }
 
     fun saveVpnServer(name: String, url: String) {
-        preferencesManager.saveServerName(name)
-        preferencesManager.saveVpnKey(url)
+        preferencesManager.addOrUpdateVpnKey(name, url)
         preferencesManager.clearVpnStartTime()
+        preferencesManager.saveServerName(name)
 
         val host = runCatching { parseUrlOutline.extractServerHost(url) ?: "" }.getOrDefault("")
-
         _vpnServerState.value = VpnServerStateUi(name = name, host = host, url = url)
     }
 
