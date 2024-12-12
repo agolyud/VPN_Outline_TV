@@ -2,18 +2,53 @@ package app.android.outlinevpntv.data.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import app.android.outlinevpntv.data.model.VpnServerInfo
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
 
 class PreferencesManager(context: Context) {
 
+    private val gson = Gson()
     private val preferences: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    fun saveVpnKey(key: String) {
-        preferences.edit().putString(KEY_VPN, key).apply()
+    fun saveVpnKeys(keys: List<VpnServerInfo>) {
+        val json = gson.toJson(keys)
+        preferences.edit().putString(KEY_VPN_LIST, json).apply()
     }
 
-    fun getVpnKey(): String? {
-        return preferences.getString(KEY_VPN, null)
+    fun getVpnKeys(): List<VpnServerInfo> {
+        val json = preferences.getString(KEY_VPN_LIST, null)
+        return if (json.isNullOrEmpty()) {
+            emptyList()
+        } else {
+            val type = object : TypeToken<List<VpnServerInfo>>() {}.type
+            gson.fromJson(json, type)
+        }
     }
+
+
+    fun addOrUpdateVpnKey(serverName: String, key: String) {
+        val existingList = getVpnKeys().toMutableList()
+        val index = existingList.indexOfFirst { it.name == serverName }
+        if (index >= 0) {
+            existingList[index] = VpnServerInfo(name = serverName, key = key)
+        } else {
+            existingList.add(VpnServerInfo(name = serverName, key = key))
+        }
+        saveVpnKeys(existingList)
+    }
+
+
+    fun deleteVpnKey(serverName: String) {
+        val existingList = getVpnKeys().toMutableList()
+        val index = existingList.indexOfFirst { it.name == serverName }
+        if (index >= 0) {
+            existingList.removeAt(index)
+            saveVpnKeys(existingList)
+        }
+    }
+
 
     fun saveVpnStartTime(startTime: Long) {
         preferences.edit().putLong(KEY_VPN_START_TIME, startTime).apply()
@@ -31,9 +66,6 @@ class PreferencesManager(context: Context) {
         preferences.edit().putString(KEY_SERVER_NAME, name).apply()
     }
 
-    fun getServerName(): String? {
-        return preferences.getString(KEY_SERVER_NAME, null)
-    }
 
     fun saveFlagUrl(ip: String, flagUrl: String) {
         preferences.edit().putString("flag_$ip", flagUrl).apply()
@@ -62,7 +94,7 @@ class PreferencesManager(context: Context) {
 
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
-        private const val KEY_VPN = "vpn_key"
+        private const val KEY_VPN_LIST = "vpn_keys_list"
         private const val KEY_VPN_START_TIME = "vpn_start_time"
         private const val KEY_SERVER_NAME = "server_name"
         private const val KEY_SELECTED_DNS = "selected_dns"
