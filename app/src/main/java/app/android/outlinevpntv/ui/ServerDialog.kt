@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.android.outlinevpntv.R
+import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.viewmodel.ServerDialogViewModel
 
@@ -60,8 +61,11 @@ fun ServerDialog(
     var isLoading by remember { mutableStateOf(false) }
     var isKeyError by remember { mutableStateOf(false) }
 
-    val clipboardManager: ClipboardManager = LocalClipboardManager.current
     val context = LocalContext.current
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
+
+    val preferencesManager = remember { PreferencesManager(context) }
+    val savedVpnKey = preferencesManager.getVpnKey().orEmpty()
 
     fun validateKey(key: String) {
         isKeyError = !viewModel.validate(key)
@@ -128,13 +132,27 @@ fun ServerDialog(
         },
         text = {
             Column {
+                // Отображаем ранее сохранённый ключ (только для чтения)
+                OutlinedTextField(
+                    value = savedVpnKey,
+                    onValueChange = { },
+                    label = { Text("Saved VPN Key") },
+                    singleLine = true,
+                    readOnly = true,
+                    enabled = false
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 OutlinedTextField(
                     value = serverName,
                     onValueChange = { serverName = it },
                     label = { Text(stringResource(id = R.string.server_name)) },
                     singleLine = true
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 OutlinedTextField(
                     value = serverKey,
                     isError = isKeyError,
@@ -151,6 +169,7 @@ fun ServerDialog(
                     label = { Text(stringResource(id = R.string.outline_key)) },
                     singleLine = true
                 )
+
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -190,7 +209,10 @@ fun ServerDialog(
                         isLoading = true
                         try {
                             onSave(serverName, serverKey)
+                            // После сохранения можно обновить сохранённый ключ, если нужно
+                            preferencesManager.saveVpnKey(serverKey)
                             isLoading = false
+                            onDismiss()
                         } catch (e: Exception) {
                             errorMessage = e.message
                             isLoading = false
@@ -204,6 +226,7 @@ fun ServerDialog(
         }
     )
 }
+
 
 @Preview
 @Composable
