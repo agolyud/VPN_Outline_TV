@@ -196,4 +196,9 @@
     <string name="search_apps">Search for applications</string>
     <string name="saved_vpn_keys">Saved VPN Keys</string>
     <string name="add_new_key">Add new Key</string>
+    <string name="internal_storage">Internal storage</string>
+    <string name="external_memory">External memory</string>
+    <string name="select_outline_key">Select the file with the Outline key</string>
+    <string name="could_not_devices">Could not find any available storage devices</string>
+    <string name="there_are_nofiles">There are no files or folders in:</string>
 </resources>
