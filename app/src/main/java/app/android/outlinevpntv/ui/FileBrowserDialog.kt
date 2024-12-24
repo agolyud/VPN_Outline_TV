@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.android.outlinevpntv.R
@@ -207,5 +208,82 @@ fun FileBrowserDialog(
                 Text(stringResource(id = R.string.cancel))
             }
         }
+    )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewStoragePickerDialog() {
+
+    val mockStorageOptions = listOf(
+        FileSorageOption(stringResource(id = R.string.internal_storage), File("/internal_mock")),
+        FileSorageOption(stringResource(id = R.string.external_memory), File("/external_mock")),
+    )
+
+    var selectedStorage by remember { mutableStateOf<FileSorageOption?>(null) }
+
+   if (selectedStorage == null) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = {
+                Text(
+                    text = stringResource(id = R.string.select_outline_key),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                if (mockStorageOptions.isEmpty()) {
+                    Text(text = stringResource(id = R.string.could_not_devices))
+                } else {
+                    LazyColumn {
+                        items(mockStorageOptions) { option ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { selectedStorage = option }
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Storage,
+                                    contentDescription = null
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = option.name)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {}) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    } else {
+        FileBrowserDialog(
+            rootDirectory = File(selectedStorage!!.file.path),
+            onFileSelected = {},
+            onDismiss = {},
+            onGoBack = { selectedStorage = null }
+        )
+    }
+}
+
+
+
+@Preview
+@Composable
+fun FileBrowserDialogPreview() {
+    val fakeRoot = File("/PreviewDirectory")
+
+    FileBrowserDialog(
+        rootDirectory = fakeRoot,
+        onFileSelected = {},
+        onDismiss = {},
+        onGoBack = {}
     )
 }
