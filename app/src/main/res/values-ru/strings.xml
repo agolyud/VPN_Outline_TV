@@ -196,4 +196,9 @@
     <string name="search_apps">Поиск приложений</string>
     <string name="saved_vpn_keys">Сохраненные VPN ключи</string>
     <string name="add_new_key">Добавить новый ключ</string>
+    <string name="internal_storage">Внутренний накопитель</string>
+    <string name="external_memory">Внешняя память</string>
+    <string name="select_outline_key">Выберите файл с ключом Outline</string>
+    <string name="could_not_devices">Не удалось найти доступные накопители</string>
+    <string name="there_are_nofiles">Нет файлов или папок в:</string>
 </resources>

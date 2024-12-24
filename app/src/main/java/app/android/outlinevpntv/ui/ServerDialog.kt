@@ -35,7 +35,6 @@ import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
 import app.android.outlinevpntv.viewmodel.ServerDialogViewModel
-import java.io.File
 
 @Composable
 fun ServerDialog(
@@ -53,8 +52,6 @@ fun ServerDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var isKeyError by remember { mutableStateOf(false) }
-
-    // Показывать ли наш файловый менеджер
     var showFileManagerDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -85,8 +82,7 @@ fun ServerDialog(
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
-
-                // Вставка из буфера
+                
                 IconButton(
                     onClick = {
                         val clipboardText = clipboardManager.getText()?.text
@@ -107,12 +103,11 @@ fun ServerDialog(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                // Вместо системного диалога — свой файловый менеджер
                 IconButton(
                     onClick = { showFileManagerDialog = true }
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.FileDownload,
+                        imageVector = Icons.Filled.Folder,
                         contentDescription = "Read from file"
                     )
                 }
@@ -120,7 +115,6 @@ fun ServerDialog(
         },
         text = {
             Column {
-                // Поле с выпадающим списком сохранённых VPN
                 Box {
                     OutlinedTextField(
                         value = serverName,
@@ -273,7 +267,6 @@ fun ServerDialog(
 if (showFileManagerDialog) {
    StoragePickerDialog(
         onFileSelected = { file ->
-            // Когда выбрали файл
             val data = file.readText().trim()
             if (data.isNotBlank()) {
                 val parsedName = data.substringAfterLast("#", serverName)

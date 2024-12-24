@@ -29,19 +29,98 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.model.FileSorageOption
 import java.io.File
+
+@Composable
+fun StoragePickerDialog(
+    onFileSelected: (File) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+
+    val internalRoot = context.filesDir
+    val externalRoot = Environment.getExternalStorageDirectory()
+
+    val storageOptions = listOfNotNull(
+        FileSorageOption(stringResource(id = R.string.internal_storage), internalRoot),
+        externalRoot?.let {
+            if (it.exists() && it.canRead()) {
+                FileSorageOption(stringResource(id = R.string.external_memory), it)
+            } else null
+        }
+    )
+
+    var selectedStorage by remember { mutableStateOf<FileSorageOption?>(null) }
+
+    if (selectedStorage == null) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text(
+                    text = stringResource(id = R.string.select_outline_key),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                if (storageOptions.isEmpty()) {
+                    Text(text = stringResource(id = R.string.could_not_devices))
+                } else {
+                    LazyColumn {
+                        items(storageOptions) { option ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedStorage = option
+                                    }
+                                    .padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Storage,
+                                    contentDescription = null
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = option.name)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(id = R.string.cancel))
+                }
+            }
+        )
+    } else {
+        FileBrowserDialog(
+            rootDirectory = selectedStorage!!.file,
+            onFileSelected = onFileSelected,
+            onDismiss = onDismiss,
+            onGoBack = {
+                selectedStorage = null
+            }
+        )
+    }
+}
+
+
 
 @Composable
 fun FileBrowserDialog(
     rootDirectory: File,
     onFileSelected: (File) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onGoBack: () -> Unit,
 ) {
-
     var currentDirectory by remember { mutableStateOf(rootDirectory) }
     val directoryItems by remember(currentDirectory) {
         mutableStateOf(
@@ -55,9 +134,11 @@ fun FileBrowserDialog(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (currentDirectory != rootDirectory) {
-                    IconButton(
-                        onClick = {
+                IconButton(
+                    onClick = {
+                        if (currentDirectory == rootDirectory) {
+                            onGoBack()
+                        } else {
                             currentDirectory.parentFile?.let { parent ->
                                 if (parent.absolutePath.contains(rootDirectory.absolutePath)) {
                                     currentDirectory = parent
@@ -66,19 +147,15 @@ fun FileBrowserDialog(
                                 }
                             }
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
                     }
-                }
-                Column {
-                    Text(
-                        text = "Выбор файла",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back"
                     )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
                     Text(
                         text = currentDirectory.absolutePath,
                         fontSize = 14.sp
@@ -88,7 +165,7 @@ fun FileBrowserDialog(
         },
         text = {
             if (directoryItems.isEmpty()) {
-                Text(text = "Нет файлов или папок в: ${currentDirectory.path}")
+                Text(text = stringResource(id = R.string.there_are_nofiles) + " ${currentDirectory.path}")
             } else {
                 LazyColumn {
                     items(directoryItems) { file ->
@@ -127,81 +204,8 @@ fun FileBrowserDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "Закрыть")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
-}
-
-
-@Composable
-fun StoragePickerDialog(
-    onFileSelected: (File) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val context = LocalContext.current
-
-
-    val internalRoot = context.filesDir
-    val externalRoot = Environment.getExternalStorageDirectory()
-
-    val storageOptions = listOfNotNull(
-        FileSorageOption("Внутренний накопитель", internalRoot),
-        externalRoot?.let {
-            if (it.exists() && it.canRead()) {
-                FileSorageOption("Внешняя память", it)
-            } else null
-        }
-    )
-
-    var selectedStorage by remember { mutableStateOf<FileSorageOption?>(null) }
-
-    if (selectedStorage == null) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = {
-                Text(
-                    text = "Выберите накопитель",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-            },
-            text = {
-                if (storageOptions.isEmpty()) {
-                    Text(text = "Не удалось найти доступные накопители.")
-                } else {
-                    LazyColumn {
-                        items(storageOptions) { option ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        selectedStorage = option
-                                    }
-                                    .padding(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Storage,
-                                    contentDescription = null
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = option.name)
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("Отмена")
-                }
-            }
-        )
-    } else {
-        FileBrowserDialog(
-            rootDirectory = selectedStorage!!.file,
-            onFileSelected = onFileSelected,
-            onDismiss = onDismiss
-        )
-    }
 }
