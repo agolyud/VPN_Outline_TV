@@ -202,4 +202,6 @@
     <string name="could_not_devices">Не удалось найти доступные накопители</string>
     <string name="there_are_nofiles">Нет файлов или папок в:</string>
     <string name="you_must_grant_permission">Для использования этой функции необходимо предоставить разрешение.</string>
+    <string name="community">Сообщество приложения</string>
+    <string name="go_to_group">Перейти в группу</string>
 </resources>
