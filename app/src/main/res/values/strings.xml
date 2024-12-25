@@ -201,4 +201,6 @@
     <string name="select_outline_key">Select the file with the Outline key</string>
     <string name="could_not_devices">Could not find any available storage devices</string>
     <string name="there_are_nofiles">There are no files or folders in:</string>
+    <string name="you_must_grant_permission">To use this feature, you must grant permission.</string>
+
 </resources>

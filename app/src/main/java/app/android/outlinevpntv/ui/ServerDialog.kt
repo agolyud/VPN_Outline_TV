@@ -78,7 +78,7 @@ fun ServerDialog(
         if (isGranted) {
             showFileManagerDialog = true
         } else {
-            Toast.makeText(context, R.string.cancel, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.you_must_grant_permission, Toast.LENGTH_SHORT).show()
         }
     }
 
