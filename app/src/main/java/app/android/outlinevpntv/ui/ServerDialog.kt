@@ -1,7 +1,13 @@
 package app.android.outlinevpntv.ui
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,12 +66,13 @@ fun ServerDialog(
     var showFileManagerDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val activity = (LocalContext.current as? Activity)
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
     val preferencesManager = remember { PreferencesManager(context) }
     var savedVpnKeys by remember { mutableStateOf(preferencesManager.getVpnKeys()) }
     var expanded by remember { mutableStateOf(false) }
 
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
+   val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
@@ -120,16 +127,26 @@ fun ServerDialog(
 
                 IconButton(
                     onClick = {
-                        val permission = Manifest.permission.READ_EXTERNAL_STORAGE
-                        val hasPermission = (
-                                ContextCompat.checkSelfPermission(context, permission) ==
-                                        PackageManager.PERMISSION_GRANTED
-                                )
-
-                        if (hasPermission) {
-                            showFileManagerDialog = true
+                       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            if (Environment.isExternalStorageManager()) {
+                               showFileManagerDialog = true
+                            } else {
+                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                                intent.data = Uri.parse("package:${context.packageName}")
+                                activity?.startActivity(intent)
+                            }
                         } else {
-                            requestPermissionLauncher.launch(permission)
+                            val permission = Manifest.permission.READ_EXTERNAL_STORAGE
+                            val hasPermission = (
+                                    ContextCompat.checkSelfPermission(context, permission) ==
+                                            PackageManager.PERMISSION_GRANTED
+                                    )
+
+                            if (hasPermission) {
+                                showFileManagerDialog = true
+                            } else {
+                               requestPermissionLauncher.launch(permission)
+                            }
                         }
                     }
                 ) {
@@ -205,6 +222,7 @@ fun ServerDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Поле "Имя сервера"
                 OutlinedTextField(
                     value = serverName,
                     onValueChange = { serverName = it },
