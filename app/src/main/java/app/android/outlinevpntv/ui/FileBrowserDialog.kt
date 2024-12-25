@@ -34,16 +34,29 @@ fun StoragePickerDialog(
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
+    val internalStorage = Environment.getExternalStorageDirectory()
+    val possibleExternalStorages = context.getExternalFilesDirs(null)
 
-    val internalRoot = context.filesDir
-    val externalRoot = Environment.getExternalStorageDirectory()
+    val secondaryExternalStorage = possibleExternalStorages
+        .getOrNull(1)
+        ?.let { fileDir ->
+            fileDir.parentFile?.parentFile?.takeIf { it.exists() && it.canRead() }
+        }
 
     val storageOptions = listOfNotNull(
-        FileSorageOption(stringResource(id = R.string.internal_storage), internalRoot),
-        externalRoot?.let {
+        internalStorage?.let {
             if (it.exists() && it.canRead()) {
-                FileSorageOption(stringResource(id = R.string.external_memory), it)
+                FileSorageOption(
+                    name = stringResource(id = R.string.internal_storage),
+                    file = it
+                )
             } else null
+        },
+        secondaryExternalStorage?.let {
+            FileSorageOption(
+                name = stringResource(id = R.string.external_memory),
+                file = it
+            )
         }
     )
 
@@ -104,7 +117,6 @@ fun StoragePickerDialog(
 }
 
 
-
 @Composable
 fun FileBrowserDialog(
     rootDirectory: File,
@@ -127,11 +139,11 @@ fun FileBrowserDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
                     onClick = {
-                        if (currentDirectory == rootDirectory) {
+                         if (currentDirectory == rootDirectory) {
                             onGoBack()
                         } else {
-                           currentDirectory.parentFile?.let { parent ->
-                               if (parent.absolutePath.contains(rootDirectory.absolutePath)) {
+                            currentDirectory.parentFile?.let { parent ->
+                                 if (parent.absolutePath.contains(rootDirectory.absolutePath)) {
                                     currentDirectory = parent
                                 } else {
                                     currentDirectory = rootDirectory
@@ -205,10 +217,9 @@ fun FileBrowserDialog(
 @Preview(showBackground = true)
 @Composable
 fun PreviewStoragePickerDialog() {
-
     val mockStorageOptions = listOf(
-        FileSorageOption(stringResource(id = R.string.internal_storage), File("/internal_mock")),
-        FileSorageOption(stringResource(id = R.string.external_memory), File("/external_mock")),
+        FileSorageOption(stringResource(id = R.string.internal_storage), File("/storage/emulated/0")),
+        FileSorageOption(stringResource(id = R.string.external_memory), File("/storage/sdcard1")),
     )
 
     var selectedStorage by remember { mutableStateOf<FileSorageOption?>(null) }
@@ -262,8 +273,6 @@ fun PreviewStoragePickerDialog() {
         )
     }
 }
-
-
 
 @Preview
 @Composable
