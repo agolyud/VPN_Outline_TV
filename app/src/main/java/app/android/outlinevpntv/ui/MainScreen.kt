@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fitbit
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -83,6 +84,7 @@ fun MainScreen(
     val isEditing by remember { mutableStateOf(false) }
     var isDialogOpen by remember { mutableStateOf(false) }
     var isSettingsDialogOpen by remember { mutableStateOf(false) }
+    var isHelpDialogOpen by remember { mutableStateOf(false) }
     var isConnectionLoading by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -166,6 +168,18 @@ fun MainScreen(
 
                 },
                 actions = {
+
+                    IconButton(onClick = {
+                        isHelpDialogOpen = true
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Quiz,
+                            contentDescription = "Open Question",
+                            tint = Color.Black
+                        )
+                    }
+
+
                     IconButton(onClick = {
                         isSettingsDialogOpen = true
                     }) {
@@ -224,6 +238,12 @@ fun MainScreen(
                     onDismiss = { isSettingsDialogOpen = false },
                     preferencesManager = PreferencesManager(context),
                     onDnsSelected = {}
+                )
+            }
+
+            if (isHelpDialogOpen) {
+                HelpDialog(
+                    onDismiss = { isHelpDialogOpen = false }
                 )
             }
 
