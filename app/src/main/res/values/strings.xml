@@ -196,4 +196,29 @@
     <string name="search_apps">Search for applications</string>
     <string name="saved_vpn_keys">Saved VPN Keys</string>
     <string name="add_new_key">Add new Key</string>
+    <string name="internal_storage">Internal storage</string>
+    <string name="external_memory">External memory</string>
+    <string name="select_outline_key">Select the file with the Outline key</string>
+    <string name="could_not_devices">Could not find any available storage devices</string>
+    <string name="there_are_nofiles">There are no files or folders in:</string>
+    <string name="you_must_grant_permission">To use this feature, you must grant permission.</string>
+    <string name="community">App Community</string>
+    <string name="go_to_group">Go to group</string>
+    <string name="instructions">Instructions</string>
+    <string name="help_text">
+    How to Add a Key\n\n
+    You can add a key in two ways:\n
+    1. Paste from the clipboard.\n
+    2. Upload from a file.\n\n
+    To do this, follow these steps:\n
+    1. Go to the "Server Information" section.\n
+    2. Choose one of the available options to insert the key.\n\n
+    Supported file formats for key upload: .txt, .json, .xml\n\n
+    Changing DNS\n\n
+    When changing DNS in the settings, you can remove ads; however, this does not work on all DNS servers.\n\n
+    Adding Applications for VPN Operation:\n\n
+    You can select the applications in which the VPN will operate.
+    </string>
+
+
 </resources>

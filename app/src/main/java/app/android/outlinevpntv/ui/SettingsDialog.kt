@@ -3,6 +3,7 @@ package app.android.outlinevpntv.ui
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
@@ -22,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +42,7 @@ import androidx.compose.ui.window.DialogProperties
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 
 @Composable
@@ -240,17 +244,75 @@ fun SettingsDialog(
 
 
 
-
-
 @Composable
 fun LinksPanel() {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(text = stringResource(id = R.string.cancel))
+                }
+            },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.qr),
+                        contentDescription = "Telegram QR Code",
+                        modifier = Modifier.size(200.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(id = R.string.go_to_group),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.clickable {
+                            try {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse("https://t.me/vpntv_group")
+                                )
+                                context.startActivity(intent)
+                            } catch (_: ActivityNotFoundException) {}
+                        }
+                    )
+                }
+            }
+        )
+    }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clickable { showDialog = true }
+                .padding(8.dp)
+        ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
+                contentDescription = "Open Telegram",
+                tint = Color.Blue
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = stringResource(id = R.string.community), // "Сообщество приложения"
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.Black,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(
@@ -300,8 +362,6 @@ fun LinksPanel() {
         }
     }
 }
-
-
 
 
 @Composable

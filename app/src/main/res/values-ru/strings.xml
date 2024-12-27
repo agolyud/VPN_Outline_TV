@@ -196,4 +196,28 @@
     <string name="search_apps">Поиск приложений</string>
     <string name="saved_vpn_keys">Сохраненные VPN ключи</string>
     <string name="add_new_key">Добавить новый ключ</string>
+    <string name="internal_storage">Внутренний накопитель</string>
+    <string name="external_memory">Внешняя память</string>
+    <string name="select_outline_key">Выберите файл с ключом Outline</string>
+    <string name="could_not_devices">Не удалось найти доступные накопители</string>
+    <string name="there_are_nofiles">Нет файлов или папок в:</string>
+    <string name="you_must_grant_permission">Для использования этой функции необходимо предоставить разрешение.</string>
+    <string name="community">Сообщество приложения</string>
+    <string name="go_to_group">Перейти в группу</string>
+    <string name="instructions">Инструкция</string>
+    <string name="help_text">
+    Как добавить ключ\n\n
+    Вы можете добавить ключ двумя способами:\n
+    1. Вставить из буфера обмена.\n
+    2. Загрузить из файла.\n\n
+    Для этого выполните следующие шаги:\n
+    1. Перейдите в раздел «Информация о сервере».\n
+    2. Выберите один из доступных пунктов для вставки ключа.\n\n
+    Поддерживаемые форматы файлов для загрузки ключа: .txt, .json, .xml\n\n
+    Изменение DNS\n\n
+    При изменении DNS в настройках вы можете убрать рекламу, однако это работает не на всех DNS-серверах.\n\n
+    Добавление приложений для работы VPN:\n\n
+    Вы можете выбрать приложения, в которых будет работать VPN
+    </string>
+
 </resources>
