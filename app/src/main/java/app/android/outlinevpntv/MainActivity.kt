@@ -28,6 +28,7 @@ import app.android.outlinevpntv.domain.OutlineVpnManager
 import app.android.outlinevpntv.domain.update.UpdateManager
 import app.android.outlinevpntv.ui.MainScreen
 import app.android.outlinevpntv.ui.UpdateDialog
+import app.android.outlinevpntv.ui.theme.OutlineVPNtvTheme
 import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
 import app.android.outlinevpntv.utils.activityresult.base.launch
 import app.android.outlinevpntv.utils.versionName
@@ -57,9 +58,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private val vpnPermission = VPNPermissionLauncher()
+    private lateinit var preferencesManager: PreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        preferencesManager = PreferencesManager(applicationContext)
 
         vpnPermission.register(this)
 
@@ -77,12 +80,11 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+           val isDarkTheme = preferencesManager.getSelectedTheme()
             val connectionState by viewModel.vpnConnectionState.observeAsState(false)
             val vpnServerState by viewModel.vpnServerState.observeAsState(VpnServerStateUi.DEFAULT)
             val errorMessage = remember { mutableStateOf<String?>(null) }
-
             val context = LocalContext.current
-
             var showUpdateDialog by remember { mutableStateOf(false) }
             var updateDialogCancelled by rememberSaveable { mutableStateOf(false) }
             val currentVersion = remember { versionName(context) }
@@ -90,32 +92,37 @@ class MainActivity : ComponentActivity() {
             var isDownloadingActive by remember { mutableStateOf(false) }
             var latestVersion by remember { mutableStateOf("") }
 
+            OutlineVPNtvTheme(
+                darkTheme = isDarkTheme,
+                dynamicColor = false
+            )
+            {
             if (showUpdateDialog) {
-                UpdateDialog(
-                    onUpdate = {
-                        isDownloadingActive = true
-                        viewModel.updateAppToLatest(
-                            onProgress = { downloadProgress = it },
-                            onFinished = { showUpdateDialog = false },
-                            onError = { _ ->
-                                Toast.makeText(
-                                    context,
-                                    R.string.update_error,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                            }
-                        )
-                    },
-                    onDismiss = {
-                        showUpdateDialog = false
-                        updateDialogCancelled = true
-                    },
-                    isDownloading = isDownloadingActive,
-                    downloadProgress = downloadProgress,
-                    currentVersion = currentVersion,
-                    latestVersion = latestVersion
-                )
-            }
+            UpdateDialog(
+                onUpdate = {
+                    isDownloadingActive = true
+                    viewModel.updateAppToLatest(
+                        onProgress = { downloadProgress = it },
+                        onFinished = { showUpdateDialog = false },
+                        onError = { _ ->
+                            Toast.makeText(
+                                context,
+                                R.string.update_error,
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    )
+                },
+                onDismiss = {
+                    showUpdateDialog = false
+                    updateDialogCancelled = true
+                },
+                isDownloading = isDownloadingActive,
+                downloadProgress = downloadProgress,
+                currentVersion = currentVersion,
+                latestVersion = latestVersion
+            )
+        }
 
             MainScreen(
                 isConnected = connectionState,
@@ -141,6 +148,7 @@ class MainActivity : ComponentActivity() {
         }
 
     }
+}
 
     override fun onResume() {
         super.onResume()

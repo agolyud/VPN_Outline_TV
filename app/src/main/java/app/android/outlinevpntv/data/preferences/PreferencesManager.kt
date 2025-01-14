@@ -27,6 +27,14 @@ class PreferencesManager(context: Context) {
         }
     }
 
+    fun saveSelectedTheme(isDark: Boolean) {
+        preferences.edit().putBoolean(KEY_SELECTED_THEME, isDark).apply()
+    }
+
+    fun getSelectedTheme(): Boolean {
+        return preferences.getBoolean(KEY_SELECTED_THEME, false)
+    }
+
 
     fun addOrUpdateVpnKey(serverName: String, key: String) {
         val existingList = getVpnKeys().toMutableList()
@@ -99,5 +107,6 @@ class PreferencesManager(context: Context) {
         private const val KEY_SERVER_NAME = "server_name"
         private const val KEY_SELECTED_DNS = "selected_dns"
         private const val KEY_SELECTED_APPS = "selected_apps"
+        private const val KEY_SELECTED_THEME = "selected_theme"
     }
 }

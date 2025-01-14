@@ -55,6 +55,9 @@ fun SettingsDialog(
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
+    var selectedTheme by remember {
+        mutableStateOf(preferencesManager.getSelectedTheme())  // Например, "light" или "dark"
+    }
 
     val selectedApps = remember { mutableStateListOf<String>() }
     var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
@@ -174,6 +177,50 @@ fun SettingsDialog(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                Text(text = "Theme", style = MaterialTheme.typography.titleMedium)
+                Column {
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = !selectedTheme,
+                                onClick = {
+                                    selectedTheme = false
+                                    preferencesManager.saveSelectedTheme(false)
+                                },
+                                role = Role.RadioButton
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = !selectedTheme, onClick = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Light Theme")
+                    }
+
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = selectedTheme,
+                                onClick = {
+                                    selectedTheme = true
+                                    preferencesManager.saveSelectedTheme(true)
+                                },
+                                role = Role.RadioButton
+                            )
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = selectedTheme, onClick = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "Dark Theme")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
 
                 SettingsDialogSectionTitle(
                     text = stringResource(id = R.string.services)
