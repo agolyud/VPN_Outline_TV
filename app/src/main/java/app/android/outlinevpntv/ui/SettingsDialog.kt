@@ -327,7 +327,6 @@ fun LinksPanel() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -337,13 +336,13 @@ fun LinksPanel() {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
                 contentDescription = "Open Telegram",
-                tint = Color.Blue
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = stringResource(id = R.string.community), // "Сообщество приложения"
+                text = stringResource(id = R.string.community),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
 
@@ -357,7 +356,6 @@ fun LinksPanel() {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth(),
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -375,13 +373,13 @@ fun LinksPanel() {
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
                     contentDescription = "Open GitHub",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = context.getString(R.string.by_author),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
 
@@ -390,7 +388,7 @@ fun LinksPanel() {
             ) {
                 Text(
                     text = stringResource(id = R.string.license),
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -439,7 +437,7 @@ fun NiaTextButton(
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    androidx.compose.material3.TextButton(onClick = onClick) {
+    TextButton(onClick = onClick) {
         content()
     }
 }
