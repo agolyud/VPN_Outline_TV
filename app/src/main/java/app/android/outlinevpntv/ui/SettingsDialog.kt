@@ -178,45 +178,33 @@ fun SettingsDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Theme", style = MaterialTheme.typography.titleMedium)
-                Column {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = !selectedTheme,
-                                onClick = {
-                                    selectedTheme = false
-                                    preferencesManager.saveSelectedTheme(false)
-                                },
-                                role = Role.RadioButton
-                            )
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(selected = !selectedTheme, onClick = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Light Theme")
-                    }
+                SettingsDialogSectionTitle(text = stringResource(id = R.string.theme),)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_moon),
+                        contentDescription = "Dark Mode",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
 
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = selectedTheme,
-                                onClick = {
-                                    selectedTheme = true
-                                    preferencesManager.saveSelectedTheme(true)
-                                },
-                                role = Role.RadioButton
-                            )
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(selected = selectedTheme, onClick = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Dark Theme")
-                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.dark_mode),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    androidx.compose.material3.Switch(
+                        checked = selectedTheme,
+                        onCheckedChange = { isChecked ->
+                            selectedTheme = isChecked
+                            preferencesManager.saveSelectedTheme(isChecked)
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
