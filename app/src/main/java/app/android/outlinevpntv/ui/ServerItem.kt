@@ -89,11 +89,11 @@ fun ServerItem(
             )
             .padding(4.dp)
             .clip(MaterialTheme.shapes.medium)
-            .background(Color(0xFFEEEEEE))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .focusable(interactionSource = interactionSource)
             .clickable(
                 interactionSource = interactionSource,
-                indication = ripple(true),
+                indication = ripple(bounded = true),
                 onClick = onForwardIconClick
             )
             .padding(4.dp)
@@ -132,13 +132,14 @@ fun ServerItem(
                 Text(
                     text = serverName.ifEmpty { context.getString(R.string.default_server_name) },
                     style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface, // Текст по умолчанию на фоне
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = serverHost.ifEmpty { context.getString(R.string.default_host_name) },
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -150,7 +151,7 @@ fun ServerItem(
                 Icon(
                     imageVector = Icons.Filled.FilterAlt,
                     contentDescription = null,
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface // Убираем Color.Black
                 )
             }
         }
