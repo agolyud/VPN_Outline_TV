@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,20 +45,20 @@ import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import app.android.outlinevpntv.viewmodel.ThemeViewModel
 
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
     preferencesManager: PreferencesManager,
-    onDnsSelected: (String) -> Unit
+    onDnsSelected: (String) -> Unit,
+    themeViewModel: ThemeViewModel,
 ) {
     var selectedDns by remember {
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
-    var selectedTheme by remember {
-        mutableStateOf(preferencesManager.getSelectedTheme())  // Например, "light" или "dark"
-    }
+    val selectedTheme by themeViewModel.isDarkTheme.collectAsState()
 
     val selectedApps = remember { mutableStateListOf<String>() }
     var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
@@ -198,11 +199,10 @@ fun SettingsDialog(
                         modifier = Modifier.weight(1f)
                     )
 
-                    androidx.compose.material3.Switch(
+                    Switch(
                         checked = selectedTheme,
                         onCheckedChange = { isChecked ->
-                            selectedTheme = isChecked
-                            preferencesManager.saveSelectedTheme(isChecked)
+                            themeViewModel.setTheme(isChecked)
                         }
                     )
                 }
@@ -453,6 +453,7 @@ private fun PreviewCustomSettingsDialog() {
     SettingsDialog(
         onDismiss = {},
         preferencesManager = preferencesManager,
-        onDnsSelected = { dns ->}
+        onDnsSelected = { dns ->},
+        themeViewModel = ThemeViewModel(preferencesManager)
     )
 }

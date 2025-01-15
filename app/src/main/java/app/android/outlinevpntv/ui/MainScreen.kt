@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.utils.versionName
+import app.android.outlinevpntv.viewmodel.ThemeViewModel
 import app.android.outlinevpntv.viewmodel.state.SingleLiveEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 import kotlinx.coroutines.delay
@@ -78,6 +79,7 @@ fun MainScreen(
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit,
     onSaveServer: (String, String) -> Unit,
+    themeViewModel: ThemeViewModel
 ) {
     val errorMessage by remember { mutableStateOf<String?>(null) }
     var elapsedTime by remember { mutableIntStateOf(0) }
@@ -237,7 +239,8 @@ fun MainScreen(
                 SettingsDialog(
                     onDismiss = { isSettingsDialogOpen = false },
                     preferencesManager = PreferencesManager(context),
-                    onDnsSelected = {}
+                    onDnsSelected = {},
+                    themeViewModel = themeViewModel
                 )
             }
 
@@ -371,5 +374,6 @@ fun DefaultPreview() {
         onConnectClick = {_-> },
         onDisconnectClick = {},
         onSaveServer = {_,_ -> },
+        themeViewModel = ThemeViewModel(PreferencesManager(LocalContext.current))
     )
 }

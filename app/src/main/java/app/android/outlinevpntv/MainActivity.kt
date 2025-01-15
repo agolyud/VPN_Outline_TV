@@ -12,6 +12,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import app.android.outlinevpntv.data.broadcast.BroadcastVpnServiceAction
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.data.remote.ParseUrlOutline
@@ -33,6 +36,7 @@ import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
 import app.android.outlinevpntv.utils.activityresult.base.launch
 import app.android.outlinevpntv.utils.versionName
 import app.android.outlinevpntv.viewmodel.MainViewModel
+import app.android.outlinevpntv.viewmodel.ThemeViewModel
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 
@@ -53,6 +57,17 @@ class MainActivity : ComponentActivity() {
                 BroadcastVpnServiceAction.STARTED -> viewModel.vpnEvent(VpnEvent.STARTED)
                 BroadcastVpnServiceAction.STOPPED -> viewModel.vpnEvent(VpnEvent.STOPPED)
                 BroadcastVpnServiceAction.ERROR -> viewModel.vpnEvent(VpnEvent.ERROR)
+            }
+        }
+    }
+
+    private val themeViewModel: ThemeViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return ThemeViewModel(
+                    preferencesManager = PreferencesManager(applicationContext)
+                ) as T
             }
         }
     }
@@ -80,7 +95,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-           val isDarkTheme = preferencesManager.getSelectedTheme()
+            val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
             val connectionState by viewModel.vpnConnectionState.observeAsState(false)
             val vpnServerState by viewModel.vpnServerState.observeAsState(VpnServerStateUi.DEFAULT)
             val errorMessage = remember { mutableStateOf<String?>(null) }
@@ -131,6 +146,7 @@ class MainActivity : ComponentActivity() {
                 onConnectClick = ::startVpn,
                 onDisconnectClick = viewModel::stopVpn,
                 onSaveServer = viewModel::saveVpnServer,
+                themeViewModel = themeViewModel,
             )
 
             errorMessage.value?.let {
