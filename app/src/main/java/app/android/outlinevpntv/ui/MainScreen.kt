@@ -37,6 +37,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -117,7 +118,7 @@ fun MainScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
@@ -154,47 +155,57 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            TopAppBar(
-                title = {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = context.getString(R.string.version, versionName(context)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
-
-                },
-                actions = {
-
-                    IconButton(onClick = {
-                        isHelpDialogOpen = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Quiz,
-                            contentDescription = "Open Question",
-                            tint = Color.Black
-                        )
-                    }
-
-
-                    IconButton(onClick = {
-                        isSettingsDialogOpen = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Open Settings",
-                            tint = Color.Black
-                        )
-                    }
-
-
-                }
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .border(
+                        width = 3.dp,
+                        color = if (isFocused)
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        else
+                            Color.Transparent,
+                        shape = MaterialTheme.shapes.large
+                    )
+                    .padding(4.dp)
+                    .clip(MaterialTheme.shapes.large)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .focusable(interactionSource = interactionSource)
+            ) {
+                TopAppBar(
+                    title = {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = context.getString(R.string.version, versionName(context)),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { isHelpDialogOpen = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Quiz,
+                                contentDescription = "Open Question",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = { isSettingsDialogOpen = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = "Open Settings",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
 
             Image(
                 painter = painterResource(id = R.drawable.logo),
