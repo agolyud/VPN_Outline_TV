@@ -16,9 +16,7 @@ class ThemeViewModel(
 
     fun setTheme(isDark: Boolean) {
         viewModelScope.launch {
-            // Сохраняем в SharedPreferences (или DataStore)
             preferencesManager.saveSelectedTheme(isDark)
-            // Обновляем стейт
             _isDarkTheme.value = isDark
         }
     }
