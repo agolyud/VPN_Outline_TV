@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -93,6 +95,14 @@ fun MainScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+
+    val waveColors = if (isDarkTheme) {
+        listOf(Color(0xFF055A76), Color(0xFF002D46))
+    } else {
+        listOf(Color(0xFFA0DEFF), Color(0xFFFFF9D0))
+    }
+
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
     LaunchedEffect(Unit) {
@@ -140,10 +150,7 @@ fun MainScreen(
             drawPath(
                 path = wavePath,
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFFA0DEFF),
-                        Color(0xFFFFF9D0)
-                    )
+                    colors = waveColors
                 )
             )
         }
