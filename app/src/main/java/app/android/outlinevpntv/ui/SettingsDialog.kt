@@ -18,6 +18,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.SystemSecurityUpdateWarning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -208,6 +211,37 @@ fun SettingsDialog(
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsDialogSectionTitle(text = stringResource(id = R.string.system),)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.SystemSecurityUpdateWarning,
+                        contentDescription = "Auto connection",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.auto_connection),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Switch(
+                        checked = selectedTheme,
+                        onCheckedChange = {
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+
 
 
                 SettingsDialogSectionTitle(

@@ -221,5 +221,7 @@
     </string>
     <string name="theme">Тема</string>
     <string name="dark_mode">Темная тема</string>
+    <string name="system">Система</string>
+    <string name="auto_connection">Автоматическое подключение</string>
 
 </resources>
