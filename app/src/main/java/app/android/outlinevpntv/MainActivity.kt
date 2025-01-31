@@ -35,6 +35,7 @@ import app.android.outlinevpntv.ui.theme.OutlineVPNtvTheme
 import app.android.outlinevpntv.utils.activityresult.VPNPermissionLauncher
 import app.android.outlinevpntv.utils.activityresult.base.launch
 import app.android.outlinevpntv.utils.versionName
+import app.android.outlinevpntv.viewmodel.AutoConnectViewModel
 import app.android.outlinevpntv.viewmodel.MainViewModel
 import app.android.outlinevpntv.viewmodel.ThemeViewModel
 import app.android.outlinevpntv.viewmodel.state.VpnEvent
@@ -72,8 +73,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private val autoConnectViewModel: AutoConnectViewModel by viewModels {
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return AutoConnectViewModel(
+                    preferencesManager = PreferencesManager(applicationContext)
+                ) as T
+            }
+        }
+    }
+
+
     private val vpnPermission = VPNPermissionLauncher()
     private lateinit var preferencesManager: PreferencesManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -147,6 +161,7 @@ class MainActivity : ComponentActivity() {
                 onDisconnectClick = viewModel::stopVpn,
                 onSaveServer = viewModel::saveVpnServer,
                 themeViewModel = themeViewModel,
+                autoConnectViewModel = autoConnectViewModel,
             )
 
             errorMessage.value?.let {
@@ -170,6 +185,15 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         viewModel.checkVpnConnectionState()
         viewModel.loadLastVpnServerState()
+
+        val isVpnConnected = viewModel.vpnConnectionState.value == true
+        val isVpnConnecting = viewModel.isConnecting.value == true
+        val isAutoConnectOn = autoConnectViewModel.isAutoConnectEnabled.value
+        val lastServerUrl = viewModel.vpnServerState.value?.url.orEmpty()
+
+        if (isAutoConnectOn && !isVpnConnected && !isVpnConnecting && lastServerUrl.isNotEmpty()) {
+            startVpn(lastServerUrl)
+        }
     }
 
     override fun onDestroy() {

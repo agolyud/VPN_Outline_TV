@@ -48,6 +48,7 @@ import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import app.android.outlinevpntv.viewmodel.AutoConnectViewModel
 import app.android.outlinevpntv.viewmodel.ThemeViewModel
 
 @Composable
@@ -56,11 +57,13 @@ fun SettingsDialog(
     preferencesManager: PreferencesManager,
     onDnsSelected: (String) -> Unit,
     themeViewModel: ThemeViewModel,
+    autoConnectViewModel: AutoConnectViewModel
 ) {
     var selectedDns by remember {
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
+    val isAutoConnectionEnabled by autoConnectViewModel.isAutoConnectEnabled.collectAsState()
     val selectedTheme by themeViewModel.isDarkTheme.collectAsState()
 
     val selectedApps = remember { mutableStateListOf<String>() }
@@ -233,8 +236,9 @@ fun SettingsDialog(
                     )
 
                     Switch(
-                        checked = selectedTheme,
-                        onCheckedChange = {
+                        checked = isAutoConnectionEnabled,
+                        onCheckedChange = { isChecked ->
+                            autoConnectViewModel.setAutoConnectEnabled(isChecked)
                         }
                     )
                 }
@@ -486,6 +490,7 @@ private fun PreviewCustomSettingsDialog() {
         onDismiss = {},
         preferencesManager = preferencesManager,
         onDnsSelected = { dns ->},
-        themeViewModel = ThemeViewModel(preferencesManager)
+        themeViewModel = ThemeViewModel(preferencesManager),
+        autoConnectViewModel = AutoConnectViewModel(preferencesManager)
     )
 }
