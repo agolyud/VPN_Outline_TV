@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,9 +38,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +67,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.android.outlinevpntv.R
 import app.android.outlinevpntv.data.preferences.PreferencesManager
 import app.android.outlinevpntv.utils.versionName
+import app.android.outlinevpntv.viewmodel.AutoConnectViewModel
+import app.android.outlinevpntv.viewmodel.ThemeViewModel
 import app.android.outlinevpntv.viewmodel.state.SingleLiveEvent
 import app.android.outlinevpntv.viewmodel.state.VpnServerStateUi
 import kotlinx.coroutines.delay
@@ -78,6 +83,8 @@ fun MainScreen(
     onConnectClick: (String) -> Unit,
     onDisconnectClick: () -> Unit,
     onSaveServer: (String, String) -> Unit,
+    themeViewModel: ThemeViewModel,
+    autoConnectViewModel: AutoConnectViewModel
 ) {
     val errorMessage by remember { mutableStateOf<String?>(null) }
     var elapsedTime by remember { mutableIntStateOf(0) }
@@ -89,6 +96,14 @@ fun MainScreen(
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
+
+    val waveColors = if (isDarkTheme) {
+        listOf(Color(0xFF055A76), Color(0xFF002D46))
+    } else {
+        listOf(Color(0xFFA0DEFF), Color(0xFFFFF9D0))
+    }
 
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -115,7 +130,7 @@ fun MainScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
@@ -137,10 +152,7 @@ fun MainScreen(
             drawPath(
                 path = wavePath,
                 brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        Color(0xFFA0DEFF),
-                        Color(0xFFFFF9D0)
-                    )
+                    colors = waveColors
                 )
             )
         }
@@ -152,47 +164,57 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            TopAppBar(
-                title = {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = context.getString(R.string.version, versionName(context)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
-                        )
-                    }
-
-                },
-                actions = {
-
-                    IconButton(onClick = {
-                        isHelpDialogOpen = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Quiz,
-                            contentDescription = "Open Question",
-                            tint = Color.Black
-                        )
-                    }
-
-
-                    IconButton(onClick = {
-                        isSettingsDialogOpen = true
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Open Settings",
-                            tint = Color.Black
-                        )
-                    }
-
-
-                }
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .border(
+                        width = 3.dp,
+                        color = if (isFocused)
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        else
+                            Color.Transparent,
+                        shape = MaterialTheme.shapes.large
+                    )
+                    .padding(4.dp)
+                    .clip(MaterialTheme.shapes.large)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .focusable(interactionSource = interactionSource)
+            ) {
+                TopAppBar(
+                    title = {
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = context.getString(R.string.version, versionName(context)),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { isHelpDialogOpen = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Quiz,
+                                contentDescription = "Open Question",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        IconButton(onClick = { isSettingsDialogOpen = true }) {
+                            Icon(
+                                imageVector = Icons.Filled.Settings,
+                                contentDescription = "Open Settings",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
 
             Image(
                 painter = painterResource(id = R.drawable.logo),
@@ -237,7 +259,9 @@ fun MainScreen(
                 SettingsDialog(
                     onDismiss = { isSettingsDialogOpen = false },
                     preferencesManager = PreferencesManager(context),
-                    onDnsSelected = {}
+                    onDnsSelected = {},
+                    themeViewModel = themeViewModel,
+                    autoConnectViewModel = autoConnectViewModel
                 )
             }
 
@@ -371,5 +395,7 @@ fun DefaultPreview() {
         onConnectClick = {_-> },
         onDisconnectClick = {},
         onSaveServer = {_,_ -> },
+        themeViewModel = ThemeViewModel(PreferencesManager(LocalContext.current)),
+        autoConnectViewModel = AutoConnectViewModel(PreferencesManager(LocalContext.current))
     )
 }

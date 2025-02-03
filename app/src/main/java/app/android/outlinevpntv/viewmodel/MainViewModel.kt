@@ -30,6 +30,10 @@ class MainViewModel(
     private val _errorEvent = SingleLiveEvent<Unit>()
     val errorEvent: LiveData<Unit> get() = _errorEvent
 
+
+    private val _isConnecting = MutableLiveData(false)
+    val isConnecting: LiveData<Boolean> = _isConnecting
+
     suspend fun checkForAppUpdates(currentVersion: String, onUpdateAvailable: (String) -> Unit) {
         val updateStatus = updateManager.checkForAppUpdates(currentVersion)
         if (updateStatus is UpdateManager.UpdateStatus.Available) {
@@ -49,6 +53,7 @@ class MainViewModel(
     }
 
     fun startVpn(configString: String) {
+        _isConnecting.value = true
         viewModelScope.launch {
             runCatching { parseUrlOutline.parse(configString) }
                 .onSuccess { config -> vpnManager.start(config) }
@@ -68,12 +73,9 @@ class MainViewModel(
     }
 
     fun loadLastVpnServerState() {
-        // Берём список ключей
         val keys = preferencesManager.getVpnKeys()
-        // Можно взять последний или первый. Здесь берём последний добавленный.
         val lastServer = keys.lastOrNull()
 
-        // Если нет сохранённых ключей
         if (lastServer == null) {
             _vpnServerState.value = VpnServerStateUi(
                 name = "",
@@ -106,6 +108,7 @@ class MainViewModel(
     }
 
     fun vpnEvent(event: VpnEvent) {
+        _isConnecting.value = false
         when (event) {
             VpnEvent.STARTED -> {
                 val started = System.currentTimeMillis()

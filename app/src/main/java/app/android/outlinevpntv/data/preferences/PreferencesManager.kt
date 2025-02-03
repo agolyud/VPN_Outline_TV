@@ -27,6 +27,14 @@ class PreferencesManager(context: Context) {
         }
     }
 
+    fun saveSelectedTheme(isDark: Boolean) {
+        preferences.edit().putBoolean(KEY_SELECTED_THEME, isDark).apply()
+    }
+
+    fun getSelectedTheme(): Boolean {
+        return preferences.getBoolean(KEY_SELECTED_THEME, false)
+    }
+
 
     fun addOrUpdateVpnKey(serverName: String, key: String) {
         val existingList = getVpnKeys().toMutableList()
@@ -92,6 +100,14 @@ class PreferencesManager(context: Context) {
         return preferences.getStringSet(KEY_SELECTED_APPS, null)
     }
 
+    fun setAutoConnectionEnabled(enabled: Boolean) {
+        preferences.edit().putBoolean(KEY_AUTO_CONNECTION, enabled).apply()
+    }
+
+    fun isAutoConnectionEnabled(): Boolean {
+        return preferences.getBoolean(KEY_AUTO_CONNECTION, false)
+    }
+
     companion object {
         private const val PREFS_NAME = "outline_vpn_prefs"
         private const val KEY_VPN_LIST = "vpn_keys_list"
@@ -99,5 +115,7 @@ class PreferencesManager(context: Context) {
         private const val KEY_SERVER_NAME = "server_name"
         private const val KEY_SELECTED_DNS = "selected_dns"
         private const val KEY_SELECTED_APPS = "selected_apps"
+        private const val KEY_SELECTED_THEME = "selected_theme"
+        private const val KEY_AUTO_CONNECTION = "auto_connection_enabled"
     }
 }

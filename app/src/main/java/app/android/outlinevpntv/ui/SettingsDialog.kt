@@ -18,11 +18,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.SystemSecurityUpdateWarning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,17 +48,23 @@ import app.android.outlinevpntv.data.preferences.PreferencesManager
 import androidx.compose.runtime.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import app.android.outlinevpntv.viewmodel.AutoConnectViewModel
+import app.android.outlinevpntv.viewmodel.ThemeViewModel
 
 @Composable
 fun SettingsDialog(
     onDismiss: () -> Unit,
     preferencesManager: PreferencesManager,
-    onDnsSelected: (String) -> Unit
+    onDnsSelected: (String) -> Unit,
+    themeViewModel: ThemeViewModel,
+    autoConnectViewModel: AutoConnectViewModel
 ) {
     var selectedDns by remember {
         mutableStateOf(preferencesManager.getSelectedDns() ?: "8.8.8.8")
     }
 
+    val isAutoConnectionEnabled by autoConnectViewModel.isAutoConnectEnabled.collectAsState()
+    val selectedTheme by themeViewModel.isDarkTheme.collectAsState()
 
     val selectedApps = remember { mutableStateListOf<String>() }
     var isAppSelectionDialogOpen by remember { mutableStateOf(false) }
@@ -169,6 +179,66 @@ fun SettingsDialog(
                             preferencesManager.saveSelectedDns("8.26.56.26")
                             selectedDns = "8.26.56.26"
                             onDnsSelected("8.26.56.26")
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsDialogSectionTitle(text = stringResource(id = R.string.theme),)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.ic_moon),
+                        contentDescription = "Dark Mode",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.dark_mode),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Switch(
+                        checked = selectedTheme,
+                        onCheckedChange = { isChecked ->
+                            themeViewModel.setTheme(isChecked)
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsDialogSectionTitle(text = stringResource(id = R.string.system),)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.SystemSecurityUpdateWarning,
+                        contentDescription = "Auto connection",
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = stringResource(id = R.string.auto_connection),
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Switch(
+                        checked = isAutoConnectionEnabled,
+                        onCheckedChange = { isChecked ->
+                            autoConnectViewModel.setAutoConnectEnabled(isChecked)
                         }
                     )
                 }
@@ -292,7 +362,6 @@ fun LinksPanel() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxWidth(),
     ) {
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -302,13 +371,13 @@ fun LinksPanel() {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_telegram),
                 contentDescription = "Open Telegram",
-                tint = Color.Blue
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = stringResource(id = R.string.community), // "Сообщество приложения"
+                text = stringResource(id = R.string.community),
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
 
@@ -322,7 +391,6 @@ fun LinksPanel() {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth(),
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -340,13 +408,13 @@ fun LinksPanel() {
                 Icon(
                     imageVector = ImageVector.vectorResource(id = R.drawable.ic_github),
                     contentDescription = "Open GitHub",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = context.getString(R.string.by_author),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
 
@@ -355,7 +423,7 @@ fun LinksPanel() {
             ) {
                 Text(
                     text = stringResource(id = R.string.license),
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -404,7 +472,7 @@ fun NiaTextButton(
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    androidx.compose.material3.TextButton(onClick = onClick) {
+    TextButton(onClick = onClick) {
         content()
     }
 }
@@ -418,6 +486,8 @@ private fun PreviewCustomSettingsDialog() {
     SettingsDialog(
         onDismiss = {},
         preferencesManager = preferencesManager,
-        onDnsSelected = { dns ->}
+        onDnsSelected = { dns ->},
+        themeViewModel = ThemeViewModel(preferencesManager),
+        autoConnectViewModel = AutoConnectViewModel(preferencesManager)
     )
 }

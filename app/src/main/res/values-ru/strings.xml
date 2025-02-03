@@ -219,5 +219,9 @@
     Добавление приложений для работы VPN:\n\n
     Вы можете выбрать приложения, в которых будет работать VPN
     </string>
+    <string name="theme">Тема</string>
+    <string name="dark_mode">Темная тема</string>
+    <string name="system">Система</string>
+    <string name="auto_connection">Автоматическое подключение при открытии приложения</string>
 
 </resources>

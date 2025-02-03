@@ -219,6 +219,10 @@
     Adding Applications for VPN Operation:\n\n
     You can select the applications in which the VPN will operate.
     </string>
+    <string name="theme">Theme</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="system">System</string>
+    <string name="auto_connection">Automatic connection when opening the application</string>
 
 
 </resources>
