@@ -245,9 +245,6 @@ fun SettingsDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
-
-
                 SettingsDialogSectionTitle(
                     text = stringResource(id = R.string.services)
                 )
