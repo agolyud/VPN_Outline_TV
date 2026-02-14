@@ -22,8 +22,16 @@ interface ParseUrlOutline {
             override fun validate(ssUrl: String): Boolean {
                 return when {
                     ssUrl.startsWith("ssconf://") -> {
-
                         true
+                    }
+                    ssUrl.startsWith("https://") || ssUrl.startsWith("http://") -> {
+                        // Проверка, что это валидный URL
+                        try {
+                            URL(ssUrl)
+                            true
+                        } catch (e: Exception) {
+                            false
+                        }
                     }
                     ssUrl.startsWith("ss://") -> {
                         val ssData = ssUrl.substringAfter("ss://")
@@ -73,6 +81,9 @@ interface ParseUrlOutline {
             Log.d("ParseUrl", "Parsing URL: $ssUrl")
             return@withContext when {
                 ssUrl.startsWith("ssconf://") -> parseShadowSocksConfUrl(ssUrl)
+                ssUrl.startsWith("https://") || ssUrl.startsWith("http://") -> {
+                    parseShadowSocksConfUrlFromHttps(ssUrl)
+                }
                 ssUrl.startsWith("ss://") -> parseShadowSocksSsUrl(ssUrl)
                 else -> {
                     Log.e("ParseUrl", "Invalid URL format: $ssUrl")
@@ -98,6 +109,33 @@ interface ParseUrlOutline {
             Log.d("ParseUrl", "Fetching JSON from URL: $httpsUrl")
 
             val jsonResponse = fetchJsonFromUrl(httpsUrl)
+            Log.d("ParseUrl", "JSON Response: $jsonResponse")
+
+            if (jsonResponse.startsWith("ss://")) {
+                Log.d("ParseUrl", "Embedded ss URL found in response: $jsonResponse")
+                return parseShadowSocksSsUrl(jsonResponse)
+            }
+
+            val jsonObject = JSONObject(jsonResponse)
+
+            val host = jsonObject.getString("server")
+            val port = jsonObject.getInt("server_port")
+            val password = jsonObject.getString("password")
+            val method = jsonObject.getString("method")
+            val prefix = jsonObject.optString("prefix", null)
+
+            Log.d("ParseUrl", "Parsed JSON - Host: $host, Port: $port, Method: $method, Password: $password, Prefix: $prefix")
+
+            return ShadowSocksInfo(method, password, host, port, prefix)
+        }
+
+        private suspend fun parseShadowSocksConfUrlFromHttps(httpsUrl: String): ShadowSocksInfo {
+            Log.d("ParseUrl", "Parsing https URL: $httpsUrl")
+
+            val urlWithoutFragment = httpsUrl.split("#")[0]
+            Log.d("ParseUrl", "Fetching JSON from URL: $urlWithoutFragment")
+
+            val jsonResponse = fetchJsonFromUrl(urlWithoutFragment)
             Log.d("ParseUrl", "JSON Response: $jsonResponse")
 
             if (jsonResponse.startsWith("ss://")) {
@@ -213,4 +251,3 @@ interface ParseUrlOutline {
         }
     }
 }
-
