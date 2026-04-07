@@ -1,4 +1,4 @@
-# Outline VPN Client for Android, Android TV, and Google TV
+# VPN Out BOX — client for Android, Android TV, and Google TV
 
 <img src="https://github.com/user-attachments/assets/4ecca803-0cb2-4b09-a9ac-e60f68244896" width=30% height=30%>
 <img src="https://github.com/user-attachments/assets/48b60298-8bab-4d83-a0ee-59c78e98cf2f" width=30% height=30%>
@@ -6,47 +6,83 @@
 <img src="https://github.com/user-attachments/assets/0f7f1fc6-f8a9-4d88-9423-125726cc3b45" width=30% height=30%>
 <img src="https://github.com/user-attachments/assets/8575cc52-7d1d-43f3-92d1-2206c24462dc" width=30% height=30%>
 
+**VPN Out BOX** is an open-source VPN application for devices running **Android**, **Android TV**, and **Google TV**.  
+It was originally created as a lightweight version of Outline VPN with a simplified interface, but over time it has significantly expanded its capabilities and now supports a wide range of modern protocols while still remaining easy to use.
 
+The app makes it easy to connect to your own VPN server, providing reliable traffic encryption and privacy protection.
 
-Outline VPN Client is an open-source, lightweight VPN application designed for devices running Android, Android TV, and Google TV. This streamlined version of Outline VPN offers a simplified interface while still providing secure and private internet connectivity. The app allows easy connection to your own Outline VPN server, offering robust encryption and privacy protection.
+## ✨ Features
 
-Features
+- **Multi-platform support** — works on **Android**, **Android TV**, and **Google TV**
+- **Secure connection** — protects your traffic using modern VPN and proxy protocols
+- **User-friendly interface** — simple and intuitive UI optimized for both smartphones and TVs
+- **Flexible configuration** — manage key VPN settings directly inside the app
+- **Privacy-focused** — the app does not keep user activity logs
+- **Fast and stable connection** — optimized for reliable performance across different device types
+- **Automatic best protocol selection by ping** — the app can automatically determine the fastest connection method
+- **Automatic best key selection by ping** — quickly selects the most responsive key
+- **Manual optimal key selection** — lets you choose the best key yourself based on ping
+- **One-click key switching** — quickly switch between available keys
+- **QR code key transfer** — on **TV**, a QR code is displayed for scanning from a phone; on smartphones, keys can be added directly through the camera
+- **App whitelist** — VPN can be applied only to selected apps
+- **Auto-connect** — the app can automatically connect to VPN when launched
 
-    Streamlined Version: Optimized for performance with a smaller size for quick installation and operation.
-    Multi-Platform Support: Compatible with devices running Android, Android TV, and Google TV.
-    Secure Connections: Encrypt your data and maintain privacy with reliable security features.
-    User-Friendly Interface: Simple and intuitive design for easy navigation and use across all supported platforms.
-    Customizability: Manage VPN settings directly from the app, adapting it to your needs.
-    No Logs: The app does not keep logs of your activity, ensuring complete privacy.
-    Fast and Reliable Connection: Enjoy a fast and stable connection, optimized for performance across various devices.
+## Supported Protocols
 
-Installation
-
-    1) Download the latest version of the APK from the releases page.
-    2) Install the APK on your device.
-    3) Enter the Outline key.
-    4) Tap "Connect."
+| Protocol | Scheme | Support / Features |
+|---|---|---|
+| Shadowsocks / Outline | `ss://` | SIP002, SIP008, AEAD (AES-128/256-GCM, ChaCha20-Poly1305) |
+| Hiddify | Hiddify keys | Hiddify key support |
+| VMess | `vmess://` | WS, gRPC, HTTP/2, Auto Secure, Packet Encoding |
+| VLESS | `vless://` | Reality, Vision, XTLS Flow, uTLS |
+| Trojan | `trojan://` | Trojan-Go compatible, Mux |
+| Hysteria 2 | `hysteria2://` | QUIC, Port Hopping, Congestion Control |
+| TUIC v5 | `tuic://` | 0-RTT, BBR, QUIC transport |
+| WireGuard | `wireguard://` | VPN tunnel, PSK |
+| SSH | `ssh://` | Secure tunnel, Private Key authentication |
+| AnyTLS | `anytls://` | TLS wrapper, traffic obfuscation |
+| Naive | `naive+https://` | Native sing-box support |
+| HTTPS | HTTPS keys | HTTPS key support |
 
 __________________________________________________________________________________________________________________________
 Russian Version
 
-# Outline VPN Клиент для Android, Android TV и Google TV
+# VPN Out BOX — клиент для Android, Android TV и Google TV
 
-Outline VPN Клиент — это open-source, легковесное VPN-приложение, разработанное для устройств на базе Android, Android TV и Google TV. Эта урезанная версия Outline VPN предоставляет упрощенный интерфейс, при этом обеспечивая безопасное и приватное подключение к интернету. Приложение позволяет легко подключиться к вашему собственному VPN-серверу Outline, предоставляя мощное шифрование и защиту конфиденциальности.
+**VPN Out BOX** — это open-source VPN-приложение для устройств на базе **Android**, **Android TV** и **Google TV**.  
+Изначально оно создавалось как облегчённая версия Outline VPN с упрощённым интерфейсом, но со временем значительно расширило свои возможности и теперь поддерживает широкий набор современных протоколов, сохраняя при этом простоту использования.
 
-Особенности
+Приложение позволяет легко подключаться к собственному VPN-серверу, обеспечивая надёжное шифрование трафика и защиту конфиденциальности.
 
-    Урезанная версия: Оптимизировано для производительности, имеет меньший размер для быстрой установки и работы.
-    Поддержка нескольких платформ: Совместимо с устройствами на базе Android, Android TV и Google TV.
-    Безопасные подключения: Шифруйте свои данные и сохраняйте конфиденциальность с помощью надежных средств безопасности.
-    Удобный интерфейс: Простой и интуитивно понятный дизайн для легкой навигации и использования на всех поддерживаемых платформах.
-    Настраиваемость: Управляйте настройками VPN прямо из приложения, адаптируясь под ваши потребности.
-    Без логов: Приложение не ведет журнал вашей активности, обеспечивая полную конфиденциальность.
-    Быстрое и надежное подключение: Наслаждайтесь быстрой и стабильной связью, оптимизированной для работы на различных устройствах.
+## ✨ Особенности
 
-Установка
+- **Поддержка нескольких платформ** — приложение работает на **Android**, **Android TV** и **Google TV**
+- **Безопасное подключение** — защита трафика с использованием современных VPN- и proxy-протоколов
+- **Удобный интерфейс** — простой и понятный UI, адаптированный как для смартфонов, так и для телевизоров
+- **Гибкая настройка** — управление основными параметрами VPN прямо внутри приложения
+- **Конфиденциальность** — приложение не ведёт журнал активности пользователя
+- **Быстрое и стабильное соединение** — оптимизировано для надёжной работы на разных типах устройств
+- **Автоматический выбор лучшего протокола по пингу** — приложение может самостоятельно определить наиболее быстрый способ подключения
+- **Автоматический выбор лучшего ключа по пингу** — быстрый выбор наиболее отзывчивого ключа
+- **Ручной выбор оптимального ключа** — возможность самостоятельно выбрать лучший ключ на основе пинга
+- **Переключение между ключами в один клик** — быстрая смена доступных ключей
+- **Передача ключей через QR-код** — на **TV** отображается QR-код для сканирования с телефона, а на смартфонах ключ можно добавить через камеру
+- **Белый список приложений** — VPN можно применять только к выбранным приложениям
+- **Автоподключение** — приложение может автоматически подключаться к VPN при запуске
 
-    1) Скачайте последнюю версию APK с страницы релизов.
-    2) Установите APK на ваше устройство.
-    3) Вставьте ключ Outline.
-    4) Нажмите подключиться.
+## Поддерживаемые протоколы
+
+| Протокол | Схема | Поддержка / особенности |
+|---|---|---|
+| Shadowsocks / Outline | `ss://` | SIP002, SIP008, AEAD (AES-128/256-GCM, ChaCha20-Poly1305) |
+| Hiddify | ключи Hiddify | Поддержка ключей Hiddify |
+| VMess | `vmess://` | WS, gRPC, HTTP/2, Auto Secure, Packet Encoding |
+| VLESS | `vless://` | Reality, Vision, XTLS Flow, uTLS |
+| Trojan | `trojan://` | Совместимость с Trojan-Go, Mux |
+| Hysteria 2 | `hysteria2://` | QUIC, Port Hopping, Congestion Control |
+| TUIC v5 | `tuic://` | 0-RTT, BBR, QUIC transport |
+| WireGuard | `wireguard://` | VPN tunnel, PSK |
+| SSH | `ssh://` | Secure tunnel, Private Key authentication |
+| AnyTLS | `anytls://` | TLS wrapper, traffic obfuscation |
+| Naive | `naive+https://` | Native sing-box support |
+| HTTPS | HTTPS-ключи | Поддержка HTTPS-ключей |
